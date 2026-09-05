@@ -8,10 +8,10 @@ public class ApplicationSetting
     // Identité entreprise
     // ========================================================
 
-    public string CompanyName { get; set; } = "TechnoVIS";
+    public string CompanyName { get; set; } = "Raven";
 
     public string CompanySlogan { get; set; } =
-        "Plateforme Maintenance Industrielle Multi-Sites";
+        "Oracle NetSuite Cloud ERP · Maintenance & Planification";
 
     public string CompanyEmail { get; set; } = "";
     public string CompanyPhone { get; set; } = "";

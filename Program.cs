@@ -147,6 +147,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
                 maxRetryDelay: TimeSpan.FromSeconds(5),
                 errorNumbersToAdd: null);
         });
+    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
 
@@ -298,7 +299,8 @@ using (var scope = app.Services.CreateScope())
         dbContext.SaveChanges();
     }
 
-
+    // Seed realistic Raven ERP demo data (Clients, Sites, Marches, Techniciens, Equipements, Visites) if empty
+    TechnoVIS.Services.DbSeeder.SeedAsync(dbContext).GetAwaiter().GetResult();
 }
 
 
@@ -329,7 +331,7 @@ app.MapGet("/health", () =>
     Results.Ok(new
     {
         status = "ok",
-        service = "TechnoVIS Maintenance API",
+        service = "Raven ERP Maintenance API",
         time = DateTime.UtcNow
     }));
 

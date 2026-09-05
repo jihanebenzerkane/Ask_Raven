@@ -3,35 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="app-meta-title">TechnoVIS — Planification & Maintenance Industrielle</title>
-  <meta name="description" content="Système de planification intelligente, gestion des équipements et techniciens pour la maintenance industrielle.">
+  <title id="app-meta-title">Raven — Oracle NetSuite Cloud ERP · Planification & Maintenance</title>
+  <meta name="description" content="Raven ERP — Système de planification intelligente, gestion des équipements et techniciens pour la maintenance industrielle façon Oracle NetSuite.">
   <link rel="stylesheet" href="styles.css">
   <script src="fallback.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body class="suite-layout">
 <!-- ═══════════════════════════════════════════
-     AUTHENTICATION (Login)
+     AUTHENTICATION (Oracle NetSuite Cloud Login)
 ═════════════════════════════════════════════ -->
 <div id="auth-container" class="auth-overlay" style="display: none;">
   <div class="auth-card-container">
 
-    <div id="auth-view-login" class="auth-card">
+    <div id="auth-view-login" class="auth-card suite-auth-card">
       <div class="auth-header">
         <div class="auth-logo-badge">
-          <img src="logo.svg" alt="TechnoVIS" class="auth-logo-img">
+          <img src="logo.svg" alt="Raven" class="auth-logo-img">
         </div>
-        <h2 class="auth-title">TechnoVIS</h2>
-        <p class="auth-subtitle">Connexion à votre compte</p>
+        <h2 class="auth-title">Raven</h2>
+        <p class="auth-subtitle">Portail Cloud de Gestion & Planification Industrielle</p>
       </div>
 
       <div id="auth-login-error" class="auth-alert auth-alert-danger" style="display: none;"></div>
 
       <form id="form-auth-login" class="auth-form">
         <div class="auth-field">
-          <label for="login-identifier" class="auth-label">Identifiant</label>
+          <label for="login-identifier" class="auth-label">Identifiant / Matricule interne</label>
           <div class="auth-input-group">
-            <input type="text" id="login-identifier" class="auth-input" placeholder="Adresse e-mail ou Matricule" required autocomplete="username">
+            <input type="text" id="login-identifier" class="auth-input" placeholder="ex. admin, RAV-T-001" required autocomplete="username">
           </div>
         </div>
 
@@ -51,16 +51,10 @@
           </div>
         </div>
 
-        <button type="submit" id="btn-submit-login" class="btn btn-primary auth-submit-btn">
+        <button type="submit" id="btn-submit-login" class="btn btn-primary auth-submit-btn suite-btn-primary">
           <span>Se connecter</span>
         </button>
       </form>
-
-      <div class="auth-footer">
-        <div class="auth-security-badge">
-          <span>Session sécurisée ASP.NET Core</span>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -87,10 +81,10 @@
 
     <!-- Brand -->
     <div class="sidebar-header">
-      <img src="logo.svg" alt="Logo" id="sidebar-logo-img" style="height: 34px; width: auto; margin-right: 12px; border-radius: 6px;">
+      <img src="logo.svg" alt="Raven Logo" id="sidebar-logo-img" style="height: 34px; width: auto; margin-right: 12px; border-radius: 6px;">
       <div class="brand-text-container">
-        <span class="brand-title" id="sidebar-brand-name">TechnoVIS</span>
-        <span class="brand-subtitle" id="sidebar-brand-sub">Plateforme Maintenance ECS</span>
+        <span class="brand-title" id="sidebar-brand-name">Raven</span>
+        <span class="brand-subtitle" id="sidebar-brand-sub">Oracle NetSuite ERP Cloud</span>
       </div>
     </div>
 
@@ -182,18 +176,126 @@
       </div>
       <div class="status-indicator" style="margin-top:8px;">
         <span id="network-dot" class="dot-online"></span>
-        <span id="network-text">API Connectée</span>
+        <span id="network-text">SQL Server Connecté</span>
       </div>
     </div>
 
   </aside>
 
   <!-- ═══════════════════════════════════════════
+       ORACLE NETSUITE TOP HEADER (Liquid Chrome & Steel)
+  ═════════════════════════════════════════════ -->
+  <div class="suite-top-container">
+
+    <!-- 1. Barre Utilitaire fine (~40px) -->
+    <header class="utility-bar">
+      <div class="utility-left">
+        <a class="utility-brand" href="#" id="utility-brand-link">
+          <img src="logo.svg" alt="Raven Logo" class="utility-logo">
+          <span class="utility-app-name" id="utility-app-name">Raven</span>
+          <span class="utility-env-tag">CLOUD ERP · PROD</span>
+        </a>
+      </div>
+
+      <div class="utility-center">
+        <div class="utility-search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="utility-search-icon">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="global-search-input" class="utility-search-input" placeholder="Recherche globale (équipements, visites, techniciens)... (Ctrl+K)" autocomplete="off">
+          <kbd class="utility-search-kbd">Ctrl+K</kbd>
+          <div id="global-search-results" class="global-search-dropdown" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div class="utility-right">
+        <button class="utility-icon-btn" id="utility-btn-refresh" title="Actualiser les données (SQL Server)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6"></path>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+
+        <button class="utility-icon-btn" id="utility-btn-alertes" title="Alertes et notifications système">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="utility-badge-count" id="utility-notif-count">0</span>
+        </button>
+
+        <div class="utility-user-wrapper" style="position: relative;">
+          <div class="utility-user-profile" id="utility-user-profile-btn" role="button" tabindex="0" title="Gérer le compte et les accès">
+            <div class="utility-user-avatar" id="utility-user-avatar">KA</div>
+            <div class="utility-user-details">
+              <span class="utility-user-name" id="utility-user-name">Karim Alami</span>
+              <span class="utility-user-role" id="utility-user-role">Responsable Maintenance</span>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-left:4px;color:#94a3b8;"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="utility-status-dot dot-online" id="utility-network-dot" title="Connecté à SQL Server"></span>
+          </div>
+
+          <!-- NetSuite User Quick Dropdown -->
+          <div class="utility-user-dropdown" id="utility-user-dropdown" style="display:none;">
+            <div class="utility-dropdown-header">
+              <div style="font-weight:700; color:#0f172a; font-size:0.88rem;" id="dropdown-user-name">Karim Alami</div>
+              <div style="font-size:0.75rem; color:#64748b;" id="dropdown-user-email">admin@raven.com</div>
+              <div style="margin-top:5px;"><span class="badge badge-planifiee" id="dropdown-user-role" style="font-size:0.68rem; font-weight:600;">Responsable Maintenance</span></div>
+            </div>
+            <div class="utility-dropdown-divider"></div>
+            <a class="utility-dropdown-item" id="dropdown-item-profile" href="#">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Mon Profil & Session</span>
+            </a>
+            <a class="utility-dropdown-item" id="dropdown-item-settings" href="#">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Paramètres ERP</span>
+            </a>
+            <div class="utility-dropdown-divider"></div>
+            <a class="utility-dropdown-item logout-item" id="dropdown-item-logout" href="#" style="color:#dc2626;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:#dc2626;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <strong>Se déconnecter</strong>
+            </a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. Nav Principale Pleine Largeur (Onglets texte NetSuite) -->
+    <nav class="topnav main-topnav" id="main-topnav">
+      <div class="topnav-tabs">
+        <button class="topnav-item active" data-tab="dashboard">Tableau de Bord</button>
+        <button class="topnav-item" data-tab="planning">Planification</button>
+        <button class="topnav-item" data-tab="equipements">Équipements</button>
+        <button class="topnav-item" data-tab="techniciens">Techniciens</button>
+        <button class="topnav-item" data-tab="clients">Marchés & Clients</button>
+        <button class="topnav-item" data-tab="technicien">Mode Terrain</button>
+        <button class="topnav-item" data-tab="settings">Paramètres</button>
+      </div>
+      <div class="topnav-quick-actions">
+        <button class="btn btn-primary btn-sm" id="topnav-btn-visite">
+          + Planifier Visite
+        </button>
+      </div>
+    </nav>
+
+    <!-- 3. Volet Secondaire (.secondary-panel) — Caché par défaut comme demandé -->
+    <div class="secondary-panel" id="secondary-panel">
+      <div class="secondary-panel-content">
+        <span class="secondary-panel-title" id="secondary-panel-title">Filtres rapides</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btn-close-secondary-panel">✕ Fermer</button>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════
        MAIN CONTENT
   ═════════════════════════════════════════════ -->
   <div class="main-wrapper">
 
-    <!-- Top bar -->
+    <!-- Top bar secondaire avec actions de page -->
     <header class="top-header">
       <div class="page-title-group" style="display: flex; align-items: center; gap: 14px;">
         <button id="btn-toggle-sidebar" class="btn btn-secondary btn-sm" title="Réduire / Agrandir le panneau latéral" style="padding: 7px; border: 1px solid var(--border-light); background: var(--surface); color: var(--text-primary); border-radius: var(--r-sm); cursor: pointer; display: flex; align-items: center; justify-content: center;">
@@ -206,11 +308,7 @@
         <h1 id="header-page-title">Tableau de Bord</h1>
       </div>
       <div class="header-actions">
-        <button class="btn btn-secondary btn-sm" id="btn-reset-db" title="Réinitialiser la base de données et supprimer les imports" style="color: var(--danger); border-color: rgba(224,90,90,0.3);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px; height:14px;"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          Réinitialiser Données
-        </button>
-        <button class="btn btn-secondary btn-sm" id="btn-refresh-data">
+        <button class="btn btn-secondary btn-sm" id="btn-refresh-data" title="Actualiser les données depuis SQL Server">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px; height:14px;"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           Actualiser
         </button>
@@ -228,46 +326,185 @@
       ══════════════════════════════════════ -->
       <section id="tab-dashboard" class="tab-view active">
 
-        <!-- KPI strip -->
-        <div class="metrics-grid">
-          <div class="metric-card metric-card-clickable" data-kpi="total" title="Voir toutes les visites">
-            <span class="metric-label">Total Visites</span>
+        <!-- 1. Rangée de Tuiles d'Action Colorées (.action-tiles façon NetSuite) -->
+        <div class="action-tiles action-tiles-grid">
+          <div class="action-tile action-tile-blue" id="tile-action-visite" role="button" tabindex="0" title="Planifier une nouvelle visite technique">
+            <div class="action-tile-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <line x1="12" y1="14" x2="12" y2="18"></line>
+                <line x1="10" y1="16" x2="14" y2="16"></line>
+              </svg>
+            </div>
+            <div class="action-tile-content">
+              <span class="action-tile-title">Planifier une visite</span>
+              <span class="action-tile-sub">Créer intervention · Détection auto</span>
+            </div>
+            <div class="action-tile-badge">+ Nouveau</div>
+          </div>
+
+          <div class="action-tile action-tile-cyan" id="tile-action-import" role="button" tabindex="0" title="Importer des équipements via Excel">
+            <div class="action-tile-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <div class="action-tile-content">
+              <span class="action-tile-title">Importer des équipements</span>
+              <span class="action-tile-sub">Catalogue Excel · Mise à jour parc</span>
+            </div>
+            <div class="action-tile-badge">Excel / XLSX</div>
+          </div>
+
+          <div class="action-tile action-tile-crimson" id="tile-action-alertes" role="button" tabindex="0" title="Consulter les alertes critiques et interventions en retard">
+            <div class="action-tile-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div class="action-tile-content">
+              <span class="action-tile-title">Alertes critiques</span>
+              <span class="action-tile-sub" id="tile-alertes-count">0 intervention(s) prioritaire(s)</span>
+            </div>
+            <div class="action-tile-badge" id="tile-badge-alertes">Action requise</div>
+          </div>
+
+          <div class="action-tile action-tile-emerald" id="tile-action-techniciens" role="button" tabindex="0" title="Consulter les techniciens disponibles">
+            <div class="action-tile-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <polyline points="17 11 19 13 23 9"></polyline>
+              </svg>
+            </div>
+            <div class="action-tile-content">
+              <span class="action-tile-title">Techniciens disponibles</span>
+              <span class="action-tile-sub" id="tile-techniciens-count">Équipes et affectations</span>
+            </div>
+            <div class="action-tile-badge" id="tile-badge-techniciens">Actifs</div>
+          </div>
+        </div>
+
+        <!-- 2. KPI strip with trend indicators (.stat-card + .stat-trend) -->
+        <div class="metrics-grid stats-row">
+          <div class="metric-card stat-card metric-card-clickable" data-kpi="total" title="Voir toutes les visites">
+            <div class="metric-header-row">
+              <span class="metric-label">Total Visites</span>
+              <span class="stat-trend trend-neutral" id="trend-total-visites">↑ +14.2%</span>
+            </div>
             <span class="metric-value" id="kpi-total-visites">—</span>
             <span class="metric-subtext">Toutes interventions confondues</span>
             <span class="metric-drill">Voir le détail →</span>
           </div>
-          <div class="metric-card metric-card-clickable" data-kpi="planifiees" title="Voir les visites planifiées">
-            <span class="metric-label">Planifiées</span>
+
+          <div class="metric-card stat-card metric-card-clickable" data-kpi="planifiees" title="Voir les visites planifiées">
+            <div class="metric-header-row">
+              <span class="metric-label">Planifiées</span>
+              <span class="stat-trend trend-up" id="trend-visites-planifiees">↑ +8.5%</span>
+            </div>
             <span class="metric-value" id="kpi-visites-planifiees">—</span>
             <span class="metric-subtext">Interventions à venir</span>
             <span class="metric-drill">Voir le détail →</span>
           </div>
-          <div class="metric-card metric-card-clickable" data-kpi="retard" title="Voir les visites en retard">
-            <span class="metric-label">En Retard</span>
+
+          <div class="metric-card stat-card metric-card-clickable" data-kpi="retard" title="Voir les visites en retard">
+            <div class="metric-header-row">
+              <span class="metric-label">En Retard</span>
+              <span class="stat-trend trend-down" id="trend-visites-retard">↓ -12.5%</span>
+            </div>
             <span class="metric-value danger" id="kpi-visites-retard">—</span>
             <span class="metric-subtext">Interventions prioritaires</span>
             <span class="metric-drill">Voir le détail →</span>
           </div>
-          <div class="metric-card metric-card-clickable" data-kpi="critiques" title="Voir les équipements critiques">
-            <span class="metric-label">Équipements Critiques</span>
+
+          <div class="metric-card stat-card metric-card-clickable" data-kpi="critiques" title="Voir les équipements critiques">
+            <div class="metric-header-row">
+              <span class="metric-label">Équipements Critiques</span>
+              <span class="stat-trend trend-warning" id="trend-equipements-critiques">↑ +2.1%</span>
+            </div>
             <span class="metric-value warning" id="kpi-equipements-critiques">—</span>
             <span class="metric-subtext">Score de risque ≥ 70</span>
             <span class="metric-drill">Voir le détail →</span>
           </div>
-          <div class="metric-card metric-card-clickable" data-kpi="validees" title="Voir les visites validées">
-            <span class="metric-label">Taux de Conformité</span>
+
+          <div class="metric-card stat-card metric-card-clickable" data-kpi="validees" title="Voir les visites validées">
+            <div class="metric-header-row">
+              <span class="metric-label">Taux de Conformité</span>
+              <span class="stat-trend trend-up" id="trend-taux-conformite">↑ +3.4%</span>
+            </div>
             <span class="metric-value success" id="kpi-taux-conformite">—</span>
             <span class="metric-subtext">Visites validées à temps</span>
             <span class="metric-drill">Voir le détail →</span>
           </div>
         </div>
 
-        <!-- Charts row -->
+        <!-- 3. Tableau Comparatif Dense (.kpi-table Period-over-Period) -->
+        <div class="section-panel kpi-table-panel">
+          <div class="kpi-table-header">
+            <div class="kpi-table-title-group">
+              <span class="panel-title">Indicateurs de Performance · Période vs Période Précédente</span>
+              <span class="kpi-table-subtitle">Analyse comparative period-over-period du parc industriel</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge-pop-period" id="kpi-table-period-label">Août 2026 vs Juillet 2026</span>
+              <button class="btn btn-secondary btn-sm" id="btn-export-kpi-table" title="Exporter le tableau comparatif au format CSV" style="padding: 5px 10px; font-size: 0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px; height:12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                CSV
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="kpi-table" id="table-kpi-comparative">
+              <thead>
+                <tr>
+                  <th>Indicateur Stratégique</th>
+                  <th>Période Réf.</th>
+                  <th style="text-align:right;">Valeur Actuelle</th>
+                  <th style="text-align:right;">Valeur Précédente</th>
+                  <th style="text-align:center;">Évolution (Δ)</th>
+                  <th style="text-align:center;">Tendance</th>
+                  <th>Statut Objectif</th>
+                </tr>
+              </thead>
+              <tbody id="kpi-table-body">
+                <!-- Dynamiquement rempli par App.renderKpiTable() -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Grille de graphiques avec mini barres d'outils (.chart-panel-toolbar) -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
 
           <div class="section-panel" style="padding: 20px;">
             <div class="panel-header" style="margin-bottom: 16px;">
               <span class="panel-title">Visites par Statut</span>
+              <div class="chart-panel-toolbar" data-chart="visites">
+                <select class="chart-period-select" id="period-chart-visites" aria-label="Période du graphique">
+                  <option value="7d">7 derniers jours</option>
+                  <option value="month" selected>Mois en cours</option>
+                  <option value="quarter">Trimestre (T3)</option>
+                  <option value="year">Année 2026</option>
+                </select>
+                <div class="chart-type-buttons">
+                  <button type="button" class="chart-type-btn active" data-chart="visites" data-type="bar" title="Graphique en barres">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                  </button>
+                  <button type="button" class="chart-type-btn" data-chart="visites" data-type="line" title="Graphique linéaire">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  </button>
+                  <button type="button" class="chart-type-btn" data-chart="visites" data-type="doughnut" title="Graphique en anneau">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10h-5a5 5 0 0 0-5-5V2z"></path></svg>
+                  </button>
+                </div>
+              </div>
             </div>
             <div style="position: relative; height: 220px;">
               <canvas id="chart-visites-statut"></canvas>
@@ -277,6 +514,24 @@
           <div class="section-panel" style="padding: 20px;">
             <div class="panel-header" style="margin-bottom: 16px;">
               <span class="panel-title">Répartition du Risque Équipements</span>
+              <div class="chart-panel-toolbar" data-chart="risque">
+                <select class="chart-period-select" id="period-chart-risque" aria-label="Période du graphique">
+                  <option value="all" selected>Tous équipements</option>
+                  <option value="recent">Installés < 2 ans</option>
+                  <option value="old">Installés ≥ 5 ans</option>
+                </select>
+                <div class="chart-type-buttons">
+                  <button type="button" class="chart-type-btn active" data-chart="risque" data-type="bar" title="Graphique en barres (horizontal)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                  </button>
+                  <button type="button" class="chart-type-btn" data-chart="risque" data-type="doughnut" title="Graphique en anneau">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 1 10 10h-5a5 5 0 0 0-5-5V2z"></path></svg>
+                  </button>
+                  <button type="button" class="chart-type-btn" data-chart="risque" data-type="polarArea" title="Graphique en secteurs polaires">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 3v9h9"></path></svg>
+                  </button>
+                </div>
+              </div>
             </div>
             <div style="position: relative; height: 220px;">
               <canvas id="chart-equipements-risque"></canvas>
@@ -722,6 +977,55 @@
               </div>
             </div>
 
+          </div>
+
+          <!-- Carte 5 : Maintenance Base de Données & Données Démo (Zone Administrateur) -->
+          <div class="section-panel" style="padding: 24px; grid-column: 1 / -1; border-left: 4px solid var(--accent);">
+            <div class="panel-header" style="margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="panel-title">💾 Maintenance Base de Données & Données Démo</span>
+                <span class="badge" style="background: rgba(30, 58, 138, 0.1); color: var(--accent); font-size: 0.72rem; font-weight: 600;">Zone Administrateur</span>
+              </div>
+            </div>
+            <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 18px;">
+              Gérez le cycle de vie des enregistrements dans SQL Server. Rechargez les données de test ou effectuez une purge complète du catalogue d'équipements et d'interventions.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <!-- Carte Démo -->
+              <div style="background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--r-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h4 style="margin: 0 0 6px 0; font-size: 0.92rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                    <span>⚡ Synchroniser les Données de Démonstration</span>
+                  </h4>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 14px 0; line-height: 1.4;">
+                    Réinitialise et injecte un jeu d'essai complet : équipements industriels, techniciens certifiés, contrats de maintenance et planning de visites.
+                  </p>
+                </div>
+                <div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-settings-seed-demo" style="color: var(--accent); border-color: rgba(30, 58, 138, 0.3); font-weight: 600;">
+                    ⚡ Recharger le Jeu Démo SQL Server
+                  </button>
+                </div>
+              </div>
+
+              <!-- Carte Danger Zone / Reset -->
+              <div style="background: #fff5f5; border: 1px solid rgba(220, 38, 38, 0.25); border-radius: var(--r-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h4 style="margin: 0 0 6px 0; font-size: 0.92rem; color: #b91c1c; display: flex; align-items: center; gap: 6px;">
+                    <span>⚠️ Purge & Réinitialisation Complète</span>
+                  </h4>
+                  <p style="font-size: 0.78rem; color: #7f1d1d; margin: 0 0 14px 0; line-height: 1.4;">
+                    Action irréversible. Supprime l'ensemble des visites, rapports et équipements ajoutés pour remettre la base dans son état d'origine.
+                  </p>
+                </div>
+                <div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-settings-reset-db" style="color: var(--danger); border-color: rgba(220, 38, 38, 0.4); background: #ffffff; font-weight: 600;">
+                    🗑️ Purger et Réinitialiser la Base
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -1291,7 +1595,7 @@
     <div style="padding: 10px 0 20px 0; text-align: center; border-bottom: 1px solid var(--border-light); margin-bottom: 18px;">
       <div class="user-avatar-circle" id="profile-modal-avatar" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto 12px;">AD</div>
       <h3 id="profile-modal-name" style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Responsable Maintenance</h3>
-      <p id="profile-modal-email" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">admin@technovis.ma</p>
+      <p id="profile-modal-email" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px;">admin@raven.com</p>
       <span class="badge badge-planifiee" id="profile-modal-role" style="margin-top: 8px; display: inline-block;">Responsable</span>
     </div>
 
@@ -1357,6 +1661,126 @@
 
 <!-- Toast notifications -->
 <div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════
+     ORACLE NETSUITE NEXT — "Search or Ask Oracle" Floating Pill
+═════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════
+     RAVEN AI ASSISTANT — "Ask Raven" Floating Pill
+═════════════════════════════════════════════ -->
+<div class="ask-raven-floating-bar" id="ask-raven-btn" title="Ask Raven · Assistant IA & Intelligence Documentaire Azure (Ctrl+J)">
+  <div class="ask-raven-badge">
+    <img src="logo.svg" alt="Raven" style="width:20px;height:20px;border-radius:4px;object-fit:cover;">
+    <span class="ask-raven-text">Ask Raven</span>
+    <span class="ask-raven-tag">Azure AI OCR</span>
+  </div>
+  <kbd class="ask-raven-kbd">Ctrl+J</kbd>
+  <div class="ask-raven-sparkle-btn" title="Ouvrir l'assistant Raven">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px;">
+      <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL — ASK RAVEN (Azure AI Document Intelligence & Assistant)
+═════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-ask-raven">
+  <div class="modal-box ask-raven-modal-box" style="max-width: 680px; width: 95%;">
+    <div class="modal-header ask-raven-header">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img src="logo.svg" alt="Raven Logo" class="ask-raven-logo-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 class="modal-title" style="color: #ffffff; margin: 0; font-size: 1.05rem; font-weight: 700;">Ask Raven</h3>
+            <span class="badge ask-raven-azure-badge">Azure AI Document Intelligence</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="ask-raven-close" id="btn-close-modal-ask-raven" title="Fermer (Échap)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" style="padding: 18px 22px; max-height: 70vh; overflow-y: auto;">
+      
+      <!-- Dialogue History -->
+      <div id="ask-raven-history" class="ask-raven-history">
+        <div class="ask-raven-msg bot">
+          <div class="ask-raven-msg-avatar">
+            <img src="logo.svg" alt="Raven" style="width:20px;height:20px;border-radius:4px;">
+          </div>
+          <div class="ask-raven-msg-bubble">
+            Bonjour ! Je suis <strong>Raven Copilot</strong>. Je peux vous assister dans l'analyse de vos parcs d'équipements, le suivi des interventions préventives, et l'extraction instantanée de vos documents techniques via Azure AI Document Intelligence. Que souhaitez-vous vérifier ?
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Suggestion Chips -->
+      <div style="margin-top: 14px; margin-bottom: 14px;">
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Suggestions rapides :</span>
+        <div class="ask-raven-chips" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+          <button type="button" class="ask-raven-chip" data-prompt="Quels équipements sont actuellement en alerte critique ?">
+            🚨 Équipements critiques
+          </button>
+          <button type="button" class="ask-raven-chip" data-prompt="Quels techniciens sont disponibles cette semaine ?">
+            👷 Disponibilité techniciens
+          </button>
+          <button type="button" class="ask-raven-chip" data-prompt="Résume le calendrier des visites de maintenance préventive.">
+            📅 Calendrier préventif
+          </button>
+          <button type="button" class="ask-raven-chip" data-prompt="Comment fonctionne l'import OCR Azure Document Intelligence ?">
+            📄 OCR & Documents Azure
+          </button>
+        </div>
+      </div>
+
+      <!-- Document Upload / OCR Dropzone -->
+      <div class="ask-raven-dropzone" id="ask-raven-ocr-dropzone">
+        <input type="file" id="ask-raven-file-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv,.docx" style="display:none;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;" id="ask-raven-dropzone-trigger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;color:var(--accent);">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="12" y1="18" x2="12" y2="12"></line>
+            <line x1="9" y1="15" x2="15" y2="15"></line>
+          </svg>
+          <div style="text-align: left;">
+            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">
+              Téléverser un document pour extraction OCR (Azure Document Intelligence)
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">
+              PDF technique, facture, devis, rapport d'expertise ou bon d'intervention (max 20 Mo)
+            </div>
+          </div>
+        </div>
+        <div id="ask-raven-file-badge" style="display:none; margin-top: 10px; padding: 6px 12px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px; font-size: 0.76rem; color: #0369a1; display: flex; align-items: center; justify-content: space-between;">
+          <span id="ask-raven-file-name">Fichier sélectionné</span>
+          <button type="button" id="btn-remove-raven-file" style="background:none;border:none;color:#0284c7;cursor:pointer;font-weight:bold;">✕</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input Box -->
+    <div class="modal-footer" style="padding: 12px 18px; background: var(--bg); border-top: 1px solid var(--border-light);">
+      <form id="form-ask-raven" style="display:flex; width:100%; gap:8px;">
+        <input type="text" id="input-ask-raven" class="form-control" placeholder="Demander à Raven ou analyser un document..." style="flex:1; border-radius:6px; font-size:0.86rem;" autocomplete="off" required>
+        <button type="submit" class="btn btn-primary" id="btn-send-ask-raven" style="padding: 8px 18px; display: flex; align-items: center; gap: 6px;">
+          <span>Envoyer</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
 
 </div><!-- /#app -->
 

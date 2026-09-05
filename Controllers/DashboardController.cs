@@ -81,6 +81,13 @@ namespace TechnoVIS.Controllers
             try
             {
                 // Vider complètement toutes les tables opérationnelles
+                var usersWithTech = await _context.Utilisateurs.Where(u => u.TechnicienId != null).ToListAsync();
+                foreach (var u in usersWithTech)
+                {
+                    u.TechnicienId = null;
+                }
+                await _context.SaveChangesAsync();
+
                 _context.Visites.RemoveRange(_context.Visites);
                 _context.Equipements.RemoveRange(_context.Equipements);
                 _context.Marches.RemoveRange(_context.Marches);
@@ -108,5 +115,25 @@ namespace TechnoVIS.Controllers
                 return StatusCode(500, new { error = $"Erreur lors du vidage des tables : {ex.Message}" });
             }
         }
+
+        [HttpPost("seed-demo-data")]
+        public async Task<IActionResult> SeedDemoData()
+        {
+            try
+            {
+                await TechnoVIS.Services.DbSeeder.SeedAsync(_context, force: true);
+                var stats = await GetStats();
+                return Ok(new
+                {
+                    message = "Données industrielles démo Raven ERP initialisées avec succès dans SQL Server.",
+                    stats
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Erreur lors de l'initialisation des données : {ex.Message}" });
+            }
+        }
     }
 }
+

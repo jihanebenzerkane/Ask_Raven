@@ -33,7 +33,6 @@ public class SettingsController : ControllerBase
     public async Task<IActionResult> GetSettings()
     {
         var settings = await _context.ApplicationSettings
-            .AsNoTracking()
             .FirstOrDefaultAsync();
 
         if (settings == null)
@@ -41,6 +40,12 @@ public class SettingsController : ControllerBase
             settings = CreateDefaultSettings();
 
             _context.ApplicationSettings.Add(settings);
+            await _context.SaveChangesAsync();
+        }
+        else if (settings.CompanyName == "TechnoVIS")
+        {
+            settings.CompanyName = "Raven";
+            settings.CompanySlogan = "Oracle NetSuite Cloud ERP · Maintenance & Planification";
             await _context.SaveChangesAsync();
         }
 
