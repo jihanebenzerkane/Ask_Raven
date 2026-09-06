@@ -1,0 +1,37 @@
+root = true
+
+# All files
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+
+# JSON files
+[*.json]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# YAML files
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# XML/CSPROJ files
+[*.{xml,csproj}]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+
+# Markdown
+[*.md]
+indent_style = space
+indent_size = 2
+end_of_line = lf
