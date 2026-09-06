@@ -1,0 +1,27 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto
+
+# C# files - UTF-8 without BOM, LF line endings
+*.cs text eol=lf
+
+# JSON files - UTF-8, LF line endings
+*.json text eol=lf
+
+# Markdown files - UTF-8, LF line endings
+*.md text eol=lf
+
+# XML and project files - UTF-8, LF line endings
+*.xml text eol=lf
+*.csproj text eol=lf
+
+# YAML files - UTF-8, LF line endings
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# HTML, CSS, JavaScript - UTF-8, LF line endings
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Dockerfile - UTF-8, LF line endings
+Dockerfile text eol=lf
