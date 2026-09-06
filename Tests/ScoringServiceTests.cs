@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+using Raven.Models;
+using Raven.Services;
 using Xunit;
 
-namespace TechnoVIS.Tests
+namespace Raven.Tests
 {
     public class ScoringServiceTests
     {
         private readonly ScoringService _scoringService = new();
 
-        #region 1. Tests Compétence (40%)
+        #region 1. Tests CompÃ©tence (40%)
 
         [Fact]
         public void EvaluerTechnicien_SpecialiteExacte_Attribue40PointsCompetence()
@@ -43,7 +43,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(40, evaluation.ScoreCompetence);
-            Assert.Contains("Spécialité certifiée HVAC", evaluation.DetailsCompetence);
+            Assert.Contains("SpÃ©cialitÃ© certifiÃ©e HVAC", evaluation.DetailsCompetence);
         }
 
         [Fact]
@@ -56,13 +56,13 @@ namespace TechnoVIS.Tests
                 Disponible = true,
                 Specialites = new List<Specialite>
                 {
-                    new() { Id = 2, Nom = "Électricité industrielle" }
+                    new() { Id = 2, Nom = "Ã‰lectricitÃ© industrielle" }
                 }
             };
 
             var equipement = new Equipement
             {
-                Categorie = "Électricité",
+                Categorie = "Ã‰lectricitÃ©",
                 Site = new Site { Ville = "Rabat" }
             };
 
@@ -71,7 +71,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(25, evaluation.ScoreCompetence);
-            Assert.Contains("Compétence connexe", evaluation.DetailsCompetence);
+            Assert.Contains("CompÃ©tence connexe", evaluation.DetailsCompetence);
         }
 
         [Fact]
@@ -99,12 +99,12 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(5, evaluation.ScoreCompetence);
-            Assert.Equal("Sans spécialité directe", evaluation.DetailsCompetence);
+            Assert.Equal("Sans spÃ©cialitÃ© directe", evaluation.DetailsCompetence);
         }
 
         #endregion
 
-        #region 2. Tests Disponibilité (30%)
+        #region 2. Tests DisponibilitÃ© (30%)
 
         [Fact]
         public void EvaluerTechnicien_TechnicienIndisponible_Attribue0PointsDisponibilite()
@@ -113,7 +113,7 @@ namespace TechnoVIS.Tests
             var technicien = new Technicien
             {
                 Statut = "Actif",
-                Disponible = false // Marqué indisponible
+                Disponible = false // MarquÃ© indisponible
             };
 
             var equipement = new Equipement { Categorie = "HVAC" };
@@ -132,7 +132,7 @@ namespace TechnoVIS.Tests
             // Arrange
             var technicien = new Technicien
             {
-                Statut = "En congé",
+                Statut = "En congÃ©",
                 Disponible = true
             };
 
@@ -143,7 +143,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(0, evaluation.ScoreDisponibilite);
-            Assert.Contains("Indisponible (En congé)", evaluation.DetailsDisponibilite);
+            Assert.Contains("Indisponible (En congÃ©)", evaluation.DetailsDisponibilite);
         }
 
         [Fact]
@@ -236,7 +236,7 @@ namespace TechnoVIS.Tests
 
         #endregion
 
-        #region 4. Tests Proximité (10%)
+        #region 4. Tests ProximitÃ© (10%)
 
         [Fact]
         public void EvaluerTechnicien_MemeVille_Attribue10PointsProximite()
@@ -257,7 +257,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(10, evaluation.ScoreProximite);
-            Assert.Contains("Même ville", evaluation.DetailsProximite);
+            Assert.Contains("MÃªme ville", evaluation.DetailsProximite);
         }
 
         [Fact]
@@ -279,7 +279,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(5, evaluation.ScoreProximite);
-            Assert.Contains("Base Rabat → Casablanca", evaluation.DetailsProximite);
+            Assert.Contains("Base Rabat â†’ Casablanca", evaluation.DetailsProximite);
         }
 
         [Fact]
@@ -301,7 +301,7 @@ namespace TechnoVIS.Tests
 
             // Assert
             Assert.Equal(4, evaluation.ScoreProximite);
-            Assert.Equal("Base non renseignée", evaluation.DetailsProximite);
+            Assert.Equal("Base non renseignÃ©e", evaluation.DetailsProximite);
         }
 
         #endregion
@@ -311,7 +311,7 @@ namespace TechnoVIS.Tests
         [Fact]
         public void EvaluerTechnicien_ScoreTotal_EstSommeDesComposantesEtClampe()
         {
-            // Arrange : Profil idéal (40 comp + 30 dispo + 20 charge + 10 prox = 100)
+            // Arrange : Profil idÃ©al (40 comp + 30 dispo + 20 charge + 10 prox = 100)
             var technicien = new Technicien
             {
                 Statut = "Actif",
@@ -353,7 +353,7 @@ namespace TechnoVIS.Tests
 
         #endregion
 
-        #region 6. Tests Score Risque & Priorité Visite
+        #region 6. Tests Score Risque & PrioritÃ© Visite
 
         [Fact]
         public void CalculerScoreRisque_EquipementNull_RetourneZero()
@@ -375,7 +375,7 @@ namespace TechnoVIS.Tests
             var score = _scoringService.CalculerScoreRisque(equipement);
 
             // 40 (age max) + 40 (crit max) + 12 (6 mois sans visite) = ~92
-            Assert.True(score >= 80, $"Le score de risque ({score}) devrait être >= 80 pour un équipement ancien et critique.");
+            Assert.True(score >= 80, $"Le score de risque ({score}) devrait Ãªtre >= 80 pour un Ã©quipement ancien et critique.");
         }
 
         [Fact]
@@ -388,7 +388,7 @@ namespace TechnoVIS.Tests
                 DerniereVisite = DateTime.Now
             };
 
-            var scorePreventive = _scoringService.CalculerPrioriteVisite(equipement, "Préventive", DateTime.Now.AddDays(7));
+            var scorePreventive = _scoringService.CalculerPrioriteVisite(equipement, "PrÃ©ventive", DateTime.Now.AddDays(7));
             var scoreCurative = _scoringService.CalculerPrioriteVisite(equipement, "Curative", DateTime.Now.AddDays(7));
 
             Assert.Equal(35.0, scoreCurative - scorePreventive, precision: 1);
@@ -407,12 +407,13 @@ namespace TechnoVIS.Tests
             var dateDansLePasse = DateTime.Now.Date.AddDays(-4); // 4 jours de retard -> 4 * 5 = +20 pts
             var dateFuture = DateTime.Now.Date.AddDays(4);
 
-            var scoreRetard = _scoringService.CalculerPrioriteVisite(equipement, "Préventive", dateDansLePasse);
-            var scoreNormal = _scoringService.CalculerPrioriteVisite(equipement, "Préventive", dateFuture);
+            var scoreRetard = _scoringService.CalculerPrioriteVisite(equipement, "PrÃ©ventive", dateDansLePasse);
+            var scoreNormal = _scoringService.CalculerPrioriteVisite(equipement, "PrÃ©ventive", dateFuture);
 
-            Assert.True(scoreRetard > scoreNormal, "Une visite en retard doit avoir une priorité plus élevée qu'une visite future.");
+            Assert.True(scoreRetard > scoreNormal, "Une visite en retard doit avoir une prioritÃ© plus Ã©levÃ©e qu'une visite future.");
         }
 
         #endregion
     }
 }
+

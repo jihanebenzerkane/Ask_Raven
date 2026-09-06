@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="app-meta-title">Raven — Oracle NetSuite Cloud ERP · Planification & Maintenance</title>
-  <meta name="description" content="Raven ERP — Système de planification intelligente, gestion des équipements et techniciens pour la maintenance industrielle façon Oracle NetSuite.">
+  <title id="app-meta-title">Raven</title>
+  <meta name="description" content="Raven Système de planification intelligente, gestion des équipements et techniciens pour la maintenance industrielle façon Oracle NetSuite.">
   <link rel="stylesheet" href="styles.css">
   <script src="fallback.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
@@ -84,7 +84,7 @@
       <img src="logo.svg" alt="Raven Logo" id="sidebar-logo-img" style="height: 34px; width: auto; margin-right: 12px; border-radius: 6px;">
       <div class="brand-text-container">
         <span class="brand-title" id="sidebar-brand-name">Raven</span>
-        <span class="brand-subtitle" id="sidebar-brand-sub">Oracle NetSuite ERP Cloud</span>
+        <span class="brand-subtitle" id="sidebar-brand-sub"></span>
       </div>
     </div>
 
@@ -193,7 +193,7 @@
         <a class="utility-brand" href="#" id="utility-brand-link">
           <img src="logo.svg" alt="Raven Logo" class="utility-logo">
           <span class="utility-app-name" id="utility-app-name">Raven</span>
-          <span class="utility-env-tag">CLOUD ERP · PROD</span>
+          
         </a>
       </div>
 
@@ -250,7 +250,7 @@
             </a>
             <a class="utility-dropdown-item" id="dropdown-item-settings" href="#">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>Paramètres ERP</span>
+              <span>Paramètres</span>
             </a>
             <div class="utility-dropdown-divider"></div>
             <a class="utility-dropdown-item logout-item" id="dropdown-item-logout" href="#" style="color:#dc2626;">
@@ -1672,9 +1672,7 @@
   <div class="ask-raven-badge">
     <img src="logo.svg" alt="Raven" style="width:20px;height:20px;border-radius:4px;object-fit:cover;">
     <span class="ask-raven-text">Ask Raven</span>
-    <span class="ask-raven-tag">Azure AI OCR</span>
   </div>
-  <kbd class="ask-raven-kbd">Ctrl+J</kbd>
   <div class="ask-raven-sparkle-btn" title="Ouvrir l'assistant Raven">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:16px;height:16px;">
       <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/>
@@ -1693,7 +1691,7 @@
         <div>
           <div style="display:flex; align-items:center; gap:8px;">
             <h3 class="modal-title" style="color: #ffffff; margin: 0; font-size: 1.05rem; font-weight: 700;">Ask Raven</h3>
-            <span class="badge ask-raven-azure-badge">Azure AI Document Intelligence</span>
+            <span class="badge ask-raven-azure-badge"></span>
           </div>
         </div>
       </div>
@@ -1731,9 +1729,6 @@
           </button>
           <button type="button" class="ask-raven-chip" data-prompt="Résume le calendrier des visites de maintenance préventive.">
             📅 Calendrier préventif
-          </button>
-          <button type="button" class="ask-raven-chip" data-prompt="Comment fonctionne l'import OCR Azure Document Intelligence ?">
-            📄 OCR & Documents Azure
           </button>
         </div>
       </div>

@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 
-namespace TechnoVIS.Services
+namespace Raven.Services
 {
     /// <summary>
     /// Represents a single row parsed from the Excel import file for Markets.
@@ -47,7 +47,7 @@ namespace TechnoVIS.Services
         public int Criticite { get; set; } = 3;
         public int ScoreSante { get; set; } = 85;
         public DateTime DateInstallation { get; set; }
-        public string Statut { get; set; } = "Opérationnel";
+        public string Statut { get; set; } = "OpÃ©rationnel";
         public string? ParseWarning { get; set; }
     }
 
@@ -71,21 +71,21 @@ namespace TechnoVIS.Services
 
     public class ExcelImportService
     {
-        // French month names → month number
+        // French month names â†’ month number
         private static readonly Dictionary<string, int> FrenchMonths = new(StringComparer.OrdinalIgnoreCase)
         {
             { "janvier",   1 }, { "jan",  1 },
-            { "février",   2 }, { "fev",  2 }, { "fevrier", 2 },
+            { "fÃ©vrier",   2 }, { "fev",  2 }, { "fevrier", 2 },
             { "mars",      3 },
             { "avril",     4 }, { "avr",  4 },
             { "mai",       5 },
             { "juin",      6 },
             { "juillet",   7 }, { "juil", 7 },
-            { "août",      8 }, { "aout", 8 },
+            { "aoÃ»t",      8 }, { "aout", 8 },
             { "septembre", 9 }, { "sep",  9 }, { "sept", 9 },
             { "octobre",  10 }, { "oct", 10 },
             { "novembre", 11 }, { "nov", 11 },
-            { "décembre", 12 }, { "dec", 12 }, { "decembre", 12 }
+            { "dÃ©cembre", 12 }, { "dec", 12 }, { "decembre", 12 }
         };
 
         /// <summary>
@@ -118,13 +118,13 @@ namespace TechnoVIS.Services
                 return -1;
             }
 
-            int colRef = Col("marché", "marche", "référence", "reference", "ref", "code");
-            int colClient = Col("clients", "client", "société", "societe", "nom client");
-            int colDebut = Col("date debut", "date début", "debut", "début");
+            int colRef = Col("marchÃ©", "marche", "rÃ©fÃ©rence", "reference", "ref", "code");
+            int colClient = Col("clients", "client", "sociÃ©tÃ©", "societe", "nom client");
+            int colDebut = Col("date debut", "date dÃ©but", "debut", "dÃ©but");
             int colFin = Col("date fin", "fin");
             int colType = Col("type de contrat", "type contrat", "type");
             int colVisites = Col("nb visite / an", "nb visite", "visites/an", "visites annuelles");
-            int colRealisees = Col("nb visite réalisé", "visites réalisées", "visites realisees");
+            int colRealisees = Col("nb visite rÃ©alisÃ©", "visites rÃ©alisÃ©es", "visites realisees");
             int colGlobal = Col("nb visite global", "visites global");
             int colSites = Col("site", "sites", "ville", "villes", "localisation");
             int colPv = Col("pv", "pv requis");
@@ -159,11 +159,11 @@ namespace TechnoVIS.Services
                 if (string.IsNullOrEmpty(reference))
                     reference = $"MAR-{r:D4}";
 
-                var dateDebut = ParseFrenchDate(row, colDebut, warnings, "Date début");
+                var dateDebut = ParseFrenchDate(row, colDebut, warnings, "Date dÃ©but");
                 var dateFin = ParseFrenchDate(row, colFin, warnings, "Date fin");
                 if (dateFin < dateDebut)
                 {
-                    warnings.Add($"Date fin ({dateFin:dd/MM/yyyy}) antérieure à la date début ({dateDebut:dd/MM/yyyy}) — ajustée à début + 1 an");
+                    warnings.Add($"Date fin ({dateFin:dd/MM/yyyy}) antÃ©rieure Ã  la date dÃ©but ({dateDebut:dd/MM/yyyy}) â€” ajustÃ©e Ã  dÃ©but + 1 an");
                     dateFin = dateDebut.AddYears(1);
                 }
 
@@ -227,15 +227,15 @@ namespace TechnoVIS.Services
                 return -1;
             }
 
-            int colSerial = Col("numéro de série", "numero de serie", "numéro série", "numero serie", "n° série", "n° serie", "n° de série", "serial", "serialnumber", "code", "matricule");
-            int colNom = Col("nom équipement", "nom equipement", "équipement", "equipement", "désignation", "designation", "nom");
-            int colCat = Col("catégorie", "categorie", "type équipement", "type equipement", "famille");
-            int colClient = Col("client", "société", "societe", "nom client");
+            int colSerial = Col("numÃ©ro de sÃ©rie", "numero de serie", "numÃ©ro sÃ©rie", "numero serie", "nÂ° sÃ©rie", "nÂ° serie", "nÂ° de sÃ©rie", "serial", "serialnumber", "code", "matricule");
+            int colNom = Col("nom Ã©quipement", "nom equipement", "Ã©quipement", "equipement", "dÃ©signation", "designation", "nom");
+            int colCat = Col("catÃ©gorie", "categorie", "type Ã©quipement", "type equipement", "famille");
+            int colClient = Col("client", "sociÃ©tÃ©", "societe", "nom client");
             int colSite = Col("site", "site client", "nom site", "ville", "localisation");
-            int colCrit = Col("criticité", "criticite", "niveau criticité", "poids");
-            int colSante = Col("santé", "sante", "score santé", "score sante", "état", "etat");
+            int colCrit = Col("criticitÃ©", "criticite", "niveau criticitÃ©", "poids");
+            int colSante = Col("santÃ©", "sante", "score santÃ©", "score sante", "Ã©tat", "etat");
             int colDate = Col("date installation", "date mise en service", "installation", "mise en service");
-            int colStatut = Col("statut", "état opérationnel", "etat operationnel");
+            int colStatut = Col("statut", "Ã©tat opÃ©rationnel", "etat operationnel");
 
             for (int r = 2; r <= lastRow; r++)
             {
@@ -263,14 +263,14 @@ namespace TechnoVIS.Services
                 if (string.IsNullOrEmpty(serialNumber))
                 {
                     serialNumber = $"EQ-{r:D4}";
-                    warnings.Add("N° de série généré automatiquement");
+                    warnings.Add("NÂ° de sÃ©rie gÃ©nÃ©rÃ© automatiquement");
                 }
 
                 if (string.IsNullOrEmpty(nom))
-                    nom = $"Équipement {serialNumber}";
+                    nom = $"Ã‰quipement {serialNumber}";
 
                 var categorie = GetStr(colCat);
-                if (string.IsNullOrEmpty(categorie)) categorie = "Général";
+                if (string.IsNullOrEmpty(categorie)) categorie = "GÃ©nÃ©ral";
 
                 var criticite = GetInt(colCrit, 3);
                 if (criticite < 1) criticite = 1;
@@ -282,7 +282,7 @@ namespace TechnoVIS.Services
 
                 var dateInstallation = ParseFrenchDate(row, colDate, warnings, "Date installation");
                 var statut = GetStr(colStatut);
-                if (string.IsNullOrEmpty(statut)) statut = "Opérationnel";
+                if (string.IsNullOrEmpty(statut)) statut = "OpÃ©rationnel";
 
                 result.Add(new EquipementImportRow
                 {
@@ -335,14 +335,14 @@ namespace TechnoVIS.Services
 
             int colMatricule = Col("matricule", "code", "id", "identifiant", "code technicien");
             int colNom = Col("nom", "nom de famille");
-            int colPrenom = Col("prénom", "prenom");
-            int colNomComplet = Col("nom complet", "nom et prénom", "nom et prenom", "technicien");
+            int colPrenom = Col("prÃ©nom", "prenom");
+            int colNomComplet = Col("nom complet", "nom et prÃ©nom", "nom et prenom", "technicien");
             int colEmail = Col("email", "courriel", "mail", "e-mail");
-            int colTel = Col("téléphone", "telephone", "tel", "gsm", "mobile");
+            int colTel = Col("tÃ©lÃ©phone", "telephone", "tel", "gsm", "mobile");
             int colBase = Col("base", "agence", "ville", "localisation", "site de rattachement");
-            int colStatut = Col("statut", "état", "etat", "disponibilité", "disponibilite");
-            int colHeures = Col("heures hebdo", "heures", "capacité", "capacite", "heures/semaine");
-            int colSpecs = Col("spécialités", "specialites", "spécialité", "specialite", "compétences", "competences");
+            int colStatut = Col("statut", "Ã©tat", "etat", "disponibilitÃ©", "disponibilite");
+            int colHeures = Col("heures hebdo", "heures", "capacitÃ©", "capacite", "heures/semaine");
+            int colSpecs = Col("spÃ©cialitÃ©s", "specialites", "spÃ©cialitÃ©", "specialite", "compÃ©tences", "competences");
 
             for (int r = 2; r <= lastRow; r++)
             {
@@ -380,7 +380,7 @@ namespace TechnoVIS.Services
                 if (string.IsNullOrEmpty(matricule))
                 {
                     matricule = $"TECH-{r:D4}";
-                    warnings.Add("Matricule généré automatiquement");
+                    warnings.Add("Matricule gÃ©nÃ©rÃ© automatiquement");
                 }
 
                 var email = GetStr(colEmail);
@@ -388,7 +388,7 @@ namespace TechnoVIS.Services
                 {
                     var cleanPrenom = Regex.Replace(prenom.ToLower(), @"[^a-z0-9]", "");
                     var cleanNom = Regex.Replace(nom.ToLower(), @"[^a-z0-9]", "");
-                    email = $"{cleanPrenom}.{cleanNom}@technovis.ma";
+                    email = $"{cleanPrenom}.{cleanNom}@Raven.ma";
                 }
 
                 var tel = GetStr(colTel);
@@ -475,7 +475,7 @@ namespace TechnoVIS.Services
                         }
                     }
                 }
-                warnings.Add($"{colName}: date non reconnue '{raw}', date du jour utilisée");
+                warnings.Add($"{colName}: date non reconnue '{raw}', date du jour utilisÃ©e");
             }
 
             return DateTime.Today;
@@ -495,3 +495,4 @@ namespace TechnoVIS.Services
         }
     }
 }
+

@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TechnoVIS.Data;
+using Raven.Data;
 
 #nullable disable
 
-namespace TechnoVIS.Migrations
+namespace Raven.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260816192925_CleanRealSchema")]
-    partial class CleanRealSchema
+    [Migration("20260906135842_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,68 @@ namespace TechnoVIS.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TechnoVIS.Models.Client", b =>
+            modelBuilder.Entity("Raven.Models.ApplicationSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AgencesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanyPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CompanySlogan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DefaultCurrency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DefaultHours")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefaultSla")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefaultVisiteDuration")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PrimaryColor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ThemeMode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ApplicationSettings");
+                });
+
+            modelBuilder.Entity("Raven.Models.Client", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -65,7 +126,7 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Equipement", b =>
+            modelBuilder.Entity("Raven.Models.Equipement", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -77,7 +138,7 @@ namespace TechnoVIS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Criticiticite")
+                    b.Property<int>("Criticite")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateInstallation")
@@ -120,7 +181,7 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Equipements");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Marche", b =>
+            modelBuilder.Entity("Raven.Models.Marche", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -195,7 +256,82 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Marches");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Site", b =>
+            modelBuilder.Entity("Raven.Models.OtpCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TempToken")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UtilisateurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TempToken")
+                        .IsUnique();
+
+                    b.HasIndex("UtilisateurId");
+
+                    b.ToTable("OtpCodes");
+                });
+
+            modelBuilder.Entity("Raven.Models.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UtilisateurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UtilisateurId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
+            modelBuilder.Entity("Raven.Models.Site", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -242,7 +378,7 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Sites");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Technicien", b =>
+            modelBuilder.Entity("Raven.Models.Specialite", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -250,8 +386,36 @@ namespace TechnoVIS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ChargeActuelle")
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nom")
+                        .IsUnique();
+
+                    b.ToTable("Specialites");
+                });
+
+            modelBuilder.Entity("Raven.Models.Technicien", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Base")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateEmbauche")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("Disponible")
                         .HasColumnType("bit");
@@ -259,6 +423,19 @@ namespace TechnoVIS.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("HeuresHebdo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HeuresPlanifiees")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HeuresTravaillees")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Matricule")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Nom")
                         .IsRequired()
@@ -268,10 +445,7 @@ namespace TechnoVIS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("SiteRattacheId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Specialites")
+                    b.Property<string>("Statut")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -281,12 +455,13 @@ namespace TechnoVIS.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SiteRattacheId");
+                    b.HasIndex("Matricule")
+                        .IsUnique();
 
                     b.ToTable("Techniciens");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Utilisateur", b =>
+            modelBuilder.Entity("Raven.Models.Utilisateur", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -322,7 +497,7 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Utilisateurs");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Visite", b =>
+            modelBuilder.Entity("Raven.Models.Visite", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -340,7 +515,13 @@ namespace TechnoVIS.Migrations
                     b.Property<DateTime?>("DateRealisee")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("DureeEstimeeMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DureeReelleMinutes")
                         .HasColumnType("int");
 
                     b.Property<int>("EquipementId")
@@ -371,6 +552,9 @@ namespace TechnoVIS.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("TypeVisiteAutre")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EquipementId");
@@ -385,9 +569,24 @@ namespace TechnoVIS.Migrations
                     b.ToTable("Visites");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Equipement", b =>
+            modelBuilder.Entity("SpecialiteTechnicien", b =>
                 {
-                    b.HasOne("TechnoVIS.Models.Site", "Site")
+                    b.Property<int>("SpecialitesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TechniciensId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SpecialitesId", "TechniciensId");
+
+                    b.HasIndex("TechniciensId");
+
+                    b.ToTable("TechnicienSpecialites", (string)null);
+                });
+
+            modelBuilder.Entity("Raven.Models.Equipement", b =>
+                {
+                    b.HasOne("Raven.Models.Site", "Site")
                         .WithMany("Equipements")
                         .HasForeignKey("SiteId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -396,9 +595,9 @@ namespace TechnoVIS.Migrations
                     b.Navigation("Site");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Marche", b =>
+            modelBuilder.Entity("Raven.Models.Marche", b =>
                 {
-                    b.HasOne("TechnoVIS.Models.Client", "Client")
+                    b.HasOne("Raven.Models.Client", "Client")
                         .WithMany("Marches")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -407,9 +606,31 @@ namespace TechnoVIS.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Site", b =>
+            modelBuilder.Entity("Raven.Models.OtpCode", b =>
                 {
-                    b.HasOne("TechnoVIS.Models.Client", "Client")
+                    b.HasOne("Raven.Models.Utilisateur", "Utilisateur")
+                        .WithMany()
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Utilisateur");
+                });
+
+            modelBuilder.Entity("Raven.Models.PasswordResetToken", b =>
+                {
+                    b.HasOne("Raven.Models.Utilisateur", "Utilisateur")
+                        .WithMany()
+                        .HasForeignKey("UtilisateurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Utilisateur");
+                });
+
+            modelBuilder.Entity("Raven.Models.Site", b =>
+                {
+                    b.HasOne("Raven.Models.Client", "Client")
                         .WithMany("Sites")
                         .HasForeignKey("ClientId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -418,38 +639,29 @@ namespace TechnoVIS.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Technicien", b =>
+            modelBuilder.Entity("Raven.Models.Utilisateur", b =>
                 {
-                    b.HasOne("TechnoVIS.Models.Site", "SiteRattache")
-                        .WithMany()
-                        .HasForeignKey("SiteRattacheId");
-
-                    b.Navigation("SiteRattache");
-                });
-
-            modelBuilder.Entity("TechnoVIS.Models.Utilisateur", b =>
-                {
-                    b.HasOne("TechnoVIS.Models.Technicien", "Technicien")
+                    b.HasOne("Raven.Models.Technicien", "Technicien")
                         .WithMany()
                         .HasForeignKey("TechnicienId");
 
                     b.Navigation("Technicien");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Visite", b =>
+            modelBuilder.Entity("Raven.Models.Visite", b =>
                 {
-                    b.HasOne("TechnoVIS.Models.Equipement", "Equipement")
-                        .WithMany()
+                    b.HasOne("Raven.Models.Equipement", "Equipement")
+                        .WithMany("Visites")
                         .HasForeignKey("EquipementId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TechnoVIS.Models.Marche", "Marche")
+                    b.HasOne("Raven.Models.Marche", "Marche")
                         .WithMany("Visites")
                         .HasForeignKey("MarcheId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("TechnoVIS.Models.Technicien", "Technicien")
+                    b.HasOne("Raven.Models.Technicien", "Technicien")
                         .WithMany("Visites")
                         .HasForeignKey("TechnicienId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -461,24 +673,44 @@ namespace TechnoVIS.Migrations
                     b.Navigation("Technicien");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Client", b =>
+            modelBuilder.Entity("SpecialiteTechnicien", b =>
+                {
+                    b.HasOne("Raven.Models.Specialite", null)
+                        .WithMany()
+                        .HasForeignKey("SpecialitesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Raven.Models.Technicien", null)
+                        .WithMany()
+                        .HasForeignKey("TechniciensId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Raven.Models.Client", b =>
                 {
                     b.Navigation("Marches");
 
                     b.Navigation("Sites");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Marche", b =>
+            modelBuilder.Entity("Raven.Models.Equipement", b =>
                 {
                     b.Navigation("Visites");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Site", b =>
+            modelBuilder.Entity("Raven.Models.Marche", b =>
+                {
+                    b.Navigation("Visites");
+                });
+
+            modelBuilder.Entity("Raven.Models.Site", b =>
                 {
                     b.Navigation("Equipements");
                 });
 
-            modelBuilder.Entity("TechnoVIS.Models.Technicien", b =>
+            modelBuilder.Entity("Raven.Models.Technicien", b =>
                 {
                     b.Navigation("Visites");
                 });

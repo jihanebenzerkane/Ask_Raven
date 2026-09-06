@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class Site
     {
@@ -17,3 +17,4 @@ namespace TechnoVIS.Models
         public List<Equipement> Equipements { get; set; } = new();
     }
 }
+

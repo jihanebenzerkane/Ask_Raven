@@ -1,20 +1,20 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Azure;
 using Azure.AI.DocumentIntelligence;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+using Raven.Data;
+using Raven.Models;
+using Raven.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TechnoVIS.Controllers
+namespace Raven.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -102,7 +102,7 @@ namespace TechnoVIS.Controllers
                 .ThenInclude(s => s!.Client)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (item == null) return NotFound(new { message = "Équipement non trouvé." });
+            if (item == null) return NotFound(new { message = "Ã‰quipement non trouvÃ©." });
 
             item.ScoreRisque = _scoringService.CalculerScoreRisque(item);
             return Ok(item);
@@ -111,7 +111,7 @@ namespace TechnoVIS.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Equipement model)
         {
-            if (model == null) return BadRequest(new { message = "Données d'équipement invalides." });
+            if (model == null) return BadRequest(new { message = "DonnÃ©es d'Ã©quipement invalides." });
 
             if (string.IsNullOrWhiteSpace(model.SerialNumber))
             {
@@ -124,7 +124,7 @@ namespace TechnoVIS.Controllers
             var exists = await _context.Equipements.AnyAsync(e => e.SerialNumber == model.SerialNumber);
             if (exists)
             {
-                return BadRequest(new { message = $"Un équipement avec le numéro de série '{model.SerialNumber}' existe déjà." });
+                return BadRequest(new { message = $"Un Ã©quipement avec le numÃ©ro de sÃ©rie '{model.SerialNumber}' existe dÃ©jÃ ." });
             }
 
             model.ScoreRisque = _scoringService.CalculerScoreRisque(model);
@@ -142,7 +142,7 @@ namespace TechnoVIS.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] Equipement updated)
         {
             var item = await _context.Equipements.FindAsync(id);
-            if (item == null) return NotFound(new { message = "Équipement non trouvé." });
+            if (item == null) return NotFound(new { message = "Ã‰quipement non trouvÃ©." });
 
             item.Nom = updated.Nom;
             item.Categorie = updated.Categorie;
@@ -161,14 +161,14 @@ namespace TechnoVIS.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _context.Equipements.FindAsync(id);
-            if (item == null) return NotFound(new { message = "Équipement non trouvé." });
+            if (item == null) return NotFound(new { message = "Ã‰quipement non trouvÃ©." });
 
             _context.Equipements.Remove(item);
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        // ── EXCEL IMPORT ÉQUIPEMENTS ────────────────────────────────────────
+        // â”€â”€ EXCEL IMPORT Ã‰QUIPEMENTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         [HttpGet("import/template")]
         public IActionResult DownloadTemplate()
@@ -179,8 +179,8 @@ namespace TechnoVIS.Controllers
             // Header row
             var headers = new[]
             {
-                "N° Série", "Nom Equipement", "Catégorie", "Client",
-                "Site", "Criticité", "Score Santé", "Date Installation", "Statut"
+                "NÂ° SÃ©rie", "Nom Equipement", "CatÃ©gorie", "Client",
+                "Site", "CriticitÃ©", "Score SantÃ©", "Date Installation", "Statut"
             };
             for (int i = 0; i < headers.Length; i++)
             {
@@ -201,7 +201,7 @@ namespace TechnoVIS.Controllers
             ws.Cell(2, 6).Value = 3;
             ws.Cell(2, 7).Value = 85;
             ws.Cell(2, 8).Value = "01/01/2024";
-            ws.Cell(2, 9).Value = "Opérationnel";
+            ws.Cell(2, 9).Value = "OpÃ©rationnel";
 
             ws.Columns().AdjustToContents();
 
@@ -232,7 +232,7 @@ namespace TechnoVIS.Controllers
                 if (!useAi)
                 {
                     if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-                        return BadRequest(new { error = "Le fichier doit être au format .xlsx." });
+                        return BadRequest(new { error = "Le fichier doit Ãªtre au format .xlsx." });
 
                     using var stream = file.OpenReadStream();
                     rows = _excelService.ParseEquipementsExcel(stream);
@@ -255,10 +255,10 @@ namespace TechnoVIS.Controllers
                     // Validate Serial Number duplicate in DB
                     if (!string.IsNullOrWhiteSpace(r.SerialNumber) && serialSet.Contains(r.SerialNumber))
                     {
-                        warnings.Add($"N° de série '{r.SerialNumber}' existe déjà (sera mis à jour)");
+                        warnings.Add($"NÂ° de sÃ©rie '{r.SerialNumber}' existe dÃ©jÃ  (sera mis Ã  jour)");
                     }
 
-                    // Validate Client ↔ Site consistency
+                    // Validate Client â†” Site consistency
                     if (!string.IsNullOrWhiteSpace(r.ClientNom) && !string.IsNullOrWhiteSpace(r.SiteNom))
                     {
                         var client = existingClients.FirstOrDefault(c => string.Equals(c.NomSociete, r.ClientNom.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -274,17 +274,17 @@ namespace TechnoVIS.Controllers
 
                                 if (siteInOtherClient != null)
                                 {
-                                    warnings.Add($"Incohérence : le site '{r.SiteNom}' appartient actuellement à '{siteInOtherClient.Client.NomSociete}', pas à '{r.ClientNom}'.");
+                                    warnings.Add($"IncohÃ©rence : le site '{r.SiteNom}' appartient actuellement Ã  '{siteInOtherClient.Client.NomSociete}', pas Ã  '{r.ClientNom}'.");
                                 }
                                 else
                                 {
-                                    warnings.Add($"Nouveau site '{r.SiteNom}' à créer pour '{r.ClientNom}'.");
+                                    warnings.Add($"Nouveau site '{r.SiteNom}' Ã  crÃ©er pour '{r.ClientNom}'.");
                                 }
                             }
                         }
                         else
                         {
-                            warnings.Add($"Nouveau client '{r.ClientNom}' et site '{r.SiteNom}' à initialiser.");
+                            warnings.Add($"Nouveau client '{r.ClientNom}' et site '{r.SiteNom}' Ã  initialiser.");
                         }
                     }
 
@@ -348,7 +348,7 @@ namespace TechnoVIS.Controllers
                         RowIndex = rowIndex++,
                         Criticite = 3,
                         ScoreSante = 85,
-                        Statut = "Opérationnel",
+                        Statut = "OpÃ©rationnel",
                         DateInstallation = DateTime.UtcNow
                     };
 
@@ -390,8 +390,8 @@ namespace TechnoVIS.Controllers
                     row.SerialNumber = !string.IsNullOrWhiteSpace(numeroSerie) ? numeroSerie.Trim() : $"EQ-AI-{rowIndex:D4}";
                     row.Nom = !string.IsNullOrWhiteSpace(marque) && !string.IsNullOrWhiteSpace(nomEquipement)
                         ? $"{marque.Trim()} {nomEquipement.Trim()}"
-                        : (!string.IsNullOrWhiteSpace(nomEquipement) ? nomEquipement.Trim() : (!string.IsNullOrWhiteSpace(marque) ? marque.Trim() : "Équipement Extrait AI"));
-                    row.Categorie = !string.IsNullOrWhiteSpace(marque) ? marque.Trim() : "Matériel";
+                        : (!string.IsNullOrWhiteSpace(nomEquipement) ? nomEquipement.Trim() : (!string.IsNullOrWhiteSpace(marque) ? marque.Trim() : "Ã‰quipement Extrait AI"));
+                    row.Categorie = !string.IsNullOrWhiteSpace(marque) ? marque.Trim() : "MatÃ©riel";
                     if (dateAchat.HasValue)
                     {
                         row.DateInstallation = dateAchat.Value;
@@ -408,7 +408,7 @@ namespace TechnoVIS.Controllers
         public async Task<IActionResult> ImportConfirm([FromBody] List<EquipementImportRow> rows)
         {
             if (rows == null || rows.Count == 0)
-                return BadRequest(new { error = "Aucune ligne à importer." });
+                return BadRequest(new { error = "Aucune ligne Ã  importer." });
 
             int imported = 0;
             int updated = 0;
@@ -504,11 +504,11 @@ namespace TechnoVIS.Controllers
                         {
                             SerialNumber = serial,
                             Nom = string.IsNullOrWhiteSpace(row.Nom) ? serial : row.Nom.Trim(),
-                            Categorie = string.IsNullOrWhiteSpace(row.Categorie) ? "Général" : row.Categorie.Trim(),
+                            Categorie = string.IsNullOrWhiteSpace(row.Categorie) ? "GÃ©nÃ©ral" : row.Categorie.Trim(),
                             SiteId = site.Id,
                             Criticite = row.Criticite > 0 ? row.Criticite : 3,
                             ScoreSante = row.ScoreSante > 0 ? row.ScoreSante : 85,
-                            Statut = string.IsNullOrWhiteSpace(row.Statut) ? "Opérationnel" : row.Statut.Trim(),
+                            Statut = string.IsNullOrWhiteSpace(row.Statut) ? "OpÃ©rationnel" : row.Statut.Trim(),
                             DateInstallation = row.DateInstallation != default ? row.DateInstallation : DateTime.UtcNow,
                             DerniereVisite = DateTime.UtcNow,
                             ProchaineVisitePrevue = DateTime.UtcNow.AddMonths(3)
@@ -540,3 +540,4 @@ namespace TechnoVIS.Controllers
         }
     }
 }
+

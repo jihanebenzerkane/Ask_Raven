@@ -429,7 +429,7 @@ const App = {
     const appName = s.companyName && s.companyName !== "TechnoVIS" ? s.companyName : "Raven";
     if (brandNameEl) brandNameEl.textContent = appName;
     if (utilAppNameEl) utilAppNameEl.textContent = appName;
-    if (brandSubEl) brandSubEl.textContent = s.companySlogan || "Oracle NetSuite Cloud ERP";
+    if (brandSubEl) brandSubEl.textContent = s.companySlogan;
     if (metaTitleEl) metaTitleEl.textContent = `${appName} — Planification & Maintenance`;
     if (techPanelHeading) techPanelHeading.textContent = `Gestion de l'Équipe des Techniciens (${appName})`;
 
@@ -721,8 +721,7 @@ const App = {
 document.getElementById("btn-open-global-import")?.addEventListener("click", () => this.openSmartImportModal());
 document.getElementById("btn-analyze-smart-import")?.addEventListener("click", () => this.handleSmartImportAnalyze());
 document.getElementById("btn-confirm-smart-import")?.addEventListener("click", () => this.handleSmartImportConfirm());
-    // ══════════════════════════════════════════════════════════════
-    // ORACLE NETSUITE CONTROLS & NAVIGATION
+  
     // ══════════════════════════════════════════════════════════════
     // 1. Navigation Onglets NetSuite Pleine Largeur (.topnav-item)
     document.querySelectorAll(".topnav-item").forEach(item => {
@@ -1915,7 +1914,7 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
         fileNameSpan.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} Ko)`;
         fileBadge.style.display = "flex";
       }
-      addBotMessage(`Document <strong>"${file.name}"</strong> chargé pour analyse OCR via <strong>Azure AI Document Intelligence</strong>. Posez une question sur ce document ou demandez-moi d'en extraire les équipements et dates d'intervention.`);
+      addBotMessage(`Document <strong>"${file.name}"</strong>Posez une question sur ce document ou demandez-moi d'en extraire les équipements et dates d'intervention.`);
     };
 
     removeFileBtn?.addEventListener("click", () => {
@@ -1962,7 +1961,7 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
           const docName = attachedFile ? attachedFile.name : "Document technique / Contrat";
           addBotMessage(`
             <div style="border-left: 3px solid #0284c7; padding-left: 10px; margin-bottom: 8px;">
-              <strong style="color:#0284c7;">⚡ Analyse Azure AI Document Intelligence :</strong>
+              
             </div>
             <div>
               Fichier analysé : <strong>${docName}</strong><br>
@@ -3232,8 +3231,8 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
 
       const isAi = res.engineUsed && res.engineUsed.toLowerCase().includes("azure");
       const badgeEngine = isAi 
-        ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600;">🤖 Azure AI</span>`
-        : `<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:600;">⚡ Standard C#</span>`;
+        ? `<span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600;"></span>`
+        : `<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:600;"></span>`;
 
       const confPct = Math.round((res.confidenceScore || 1.0) * 100);
       const badgeConf = confPct >= 85 

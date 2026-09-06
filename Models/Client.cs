@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class Client
     {
@@ -15,3 +15,4 @@ namespace TechnoVIS.Models
         public List<Marche> Marches { get; set; } = new();
     }
 }
+

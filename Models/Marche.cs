@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class Marche
     {
@@ -15,18 +15,18 @@ namespace TechnoVIS.Models
         public int SlaHeures { get; set; } = 24;
         public int VisitesAnnuellesPrevues { get; set; } = 12;
         public int VisitesRealisees { get; set; } = 0;
-        public string Statut { get; set; } = "Actif"; // Actif, En Renouvellement, Expiré
+        public string Statut { get; set; } = "Actif"; // Actif, En Renouvellement, ExpirÃ©
 
         public List<Visite> Visites { get; set; } = new();
 
-        // ── Fields added for Excel import ──────────────────────────────────
-        /// <summary>Type de contrat libre (e.g. "Maintenance") — source: colonne "Type de contrat"</summary>
+        // â”€â”€ Fields added for Excel import â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        /// <summary>Type de contrat libre (e.g. "Maintenance") â€” source: colonne "Type de contrat"</summary>
         public string? TypeContrat { get; set; }
 
-        /// <summary>PV requis — source: colonne "PV O/N" (O = true)</summary>
+        /// <summary>PV requis â€” source: colonne "PV O/N" (O = true)</summary>
         public bool PvRequis { get; set; } = false;
 
-        /// <summary>Facture requise — source: colonne "F O/N" (O = true)</summary>
+        /// <summary>Facture requise â€” source: colonne "F O/N" (O = true)</summary>
         public bool FactureRequise { get; set; } = false;
 
         /// <summary>Nombre de postes de travail fixes</summary>
@@ -41,11 +41,12 @@ namespace TechnoVIS.Models
         /// <summary>Nombre de serveurs</summary>
         public int NombreServeur { get; set; } = 0;
 
-        /// <summary>Équipements divers non structurés — source: colonne "Autres", stocké tel quel</summary>
+        /// <summary>Ã‰quipements divers non structurÃ©s â€” source: colonne "Autres", stockÃ© tel quel</summary>
         public string? EquipementsDivers { get; set; }
 
-        /// <summary>Commentaire brut depuis Excel — NE PAS utiliser comme Statut fonctionnel</summary>
+        /// <summary>Commentaire brut depuis Excel â€” NE PAS utiliser comme Statut fonctionnel</summary>
         public string? CommentaireImport { get; set; }
     }
 }
+
 

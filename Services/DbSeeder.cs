@@ -1,13 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
+using Raven.Data;
+using Raven.Models;
 
-namespace TechnoVIS.Services
+namespace Raven.Services
 {
     public static class DbSeeder
     {
@@ -19,13 +19,13 @@ namespace TechnoVIS.Services
                 var defaultSpecialites = new List<Specialite>
                 {
                     new() { Nom = "HVAC", Description = "Climatisation, Chauffage, Ventilation et Groupes Froid" },
-                    new() { Nom = "TGBT", Description = "Tableaux Généraux Basse Tension et Armoires Électriques" },
+                    new() { Nom = "TGBT", Description = "Tableaux GÃ©nÃ©raux Basse Tension et Armoires Ã‰lectriques" },
                     new() { Nom = "Haute Tension", Description = "Postes de Transformation et Cellules MT/HT" },
-                    new() { Nom = "Groupe Électrogène", Description = "Groupes Électrogènes et Onduleurs de secours" },
-                    new() { Nom = "Compresseur", Description = "Centrales d'air comprimé et pompes industrielles" },
-                    new() { Nom = "Automatisme", Description = "Automates programmables, Télégestion et Régulation" },
-                    new() { Nom = "Électricité industrielle", Description = "Installations et câblages électriques industriels" },
-                    new() { Nom = "Informatique & Réseau", Description = "Serveurs, Postes, Baies de brassage et Switchs" }
+                    new() { Nom = "Groupe Ã‰lectrogÃ¨ne", Description = "Groupes Ã‰lectrogÃ¨nes et Onduleurs de secours" },
+                    new() { Nom = "Compresseur", Description = "Centrales d'air comprimÃ© et pompes industrielles" },
+                    new() { Nom = "Automatisme", Description = "Automates programmables, TÃ©lÃ©gestion et RÃ©gulation" },
+                    new() { Nom = "Ã‰lectricitÃ© industrielle", Description = "Installations et cÃ¢blages Ã©lectriques industriels" },
+                    new() { Nom = "Informatique & RÃ©seau", Description = "Serveurs, Postes, Baies de brassage et Switchs" }
                 };
                 context.Specialites.AddRange(defaultSpecialites);
                 await context.SaveChangesAsync();
@@ -98,7 +98,7 @@ namespace TechnoVIS.Services
                 var clientOcp = new Client
                 {
                     CodeClient = "CLI-OCP-001",
-                    NomSociete = "OCP Group — Jorf Lasfar",
+                    NomSociete = "OCP Group â€” Jorf Lasfar",
                     ContactPrincipal = "M. Ahmed Bennis (Dir. Technique)",
                     Email = "contact.jorf@ocpgroup.ma",
                     Telephone = "+212 5 23 34 50 00",
@@ -118,7 +118,7 @@ namespace TechnoVIS.Services
                 var clientBmce = new Client
                 {
                     CodeClient = "CLI-BMCE-003",
-                    NomSociete = "Bank of Africa — Tour CFC",
+                    NomSociete = "Bank of Africa â€” Tour CFC",
                     ContactPrincipal = "M. Mehdi Senhaji (Facility Manager)",
                     Email = "facility@bankofafrica.ma",
                     Telephone = "+212 5 22 29 88 88",
@@ -129,7 +129,7 @@ namespace TechnoVIS.Services
                 {
                     CodeClient = "CLI-REN-004",
                     NomSociete = "Renault Group Tanger Melloussa",
-                    ContactPrincipal = "M. Rachid El Amrani (Ing. Énergie & Fluides)",
+                    ContactPrincipal = "M. Rachid El Amrani (Ing. Ã‰nergie & Fluides)",
                     Email = "maintenance.tanger@renault.com",
                     Telephone = "+212 5 39 39 70 00",
                     Adresse = "Zone Franche de Melloussa, Tanger"
@@ -166,7 +166,7 @@ namespace TechnoVIS.Services
                 var siteTourCfc = new Site
                 {
                     CodeSite = "SIT-CFC-01",
-                    NomSite = "Tour Siège 45 Étages",
+                    NomSite = "Tour SiÃ¨ge 45 Ã‰tages",
                     ClientId = clientBmce.Id,
                     Adresse = "Boulevard Main Street, CFC",
                     Ville = "Casablanca",
@@ -222,7 +222,7 @@ namespace TechnoVIS.Services
                 var marcheFluides = new Marche
                 {
                     CodeMarche = "MAR-2026-COMP-03",
-                    Libelle = "Centrale Air Comprimé & Réseau Pompage",
+                    Libelle = "Centrale Air ComprimÃ© & RÃ©seau Pompage",
                     ClientId = clientRenault.Id,
                     DateDebut = new DateTime(2025, 6, 1),
                     DateFin = new DateTime(2026, 10, 31),
@@ -236,7 +236,7 @@ namespace TechnoVIS.Services
                 var marcheSecours = new Marche
                 {
                     CodeMarche = "MAR-2026-GE-04",
-                    Libelle = "Groupes Électrogènes Caterpillar & Onduleurs APC",
+                    Libelle = "Groupes Ã‰lectrogÃ¨nes Caterpillar & Onduleurs APC",
                     ClientId = clientTangerMed.Id,
                     DateDebut = new DateTime(2026, 3, 1),
                     DateFin = new DateTime(2027, 2, 28),
@@ -254,7 +254,7 @@ namespace TechnoVIS.Services
                 var specHvac = specialites.FirstOrDefault(s => s.Nom == "HVAC");
                 var specTgbt = specialites.FirstOrDefault(s => s.Nom == "TGBT");
                 var specHt = specialites.FirstOrDefault(s => s.Nom == "Haute Tension");
-                var specGe = specialites.FirstOrDefault(s => s.Nom == "Groupe Électrogène");
+                var specGe = specialites.FirstOrDefault(s => s.Nom == "Groupe Ã‰lectrogÃ¨ne");
                 var specComp = specialites.FirstOrDefault(s => s.Nom == "Compresseur");
                 var specAuto = specialites.FirstOrDefault(s => s.Nom == "Automatisme");
 
@@ -353,14 +353,14 @@ namespace TechnoVIS.Services
                 var eq1 = new Equipement
                 {
                     SerialNumber = "EQ-CHILLER-01",
-                    Nom = "Groupe d'eau glacée Trane RTAC 250",
+                    Nom = "Groupe d'eau glacÃ©e Trane RTAC 250",
                     Categorie = "HVAC",
                     SiteId = siteTourCfc.Id,
                     DateInstallation = new DateTime(2021, 5, 10),
                     Criticite = 5,
                     ScoreSante = 65,
                     ScoreRisque = 78,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 7, 15),
                     ProchaineVisitePrevue = new DateTime(2026, 8, 25)
                 };
@@ -375,7 +375,7 @@ namespace TechnoVIS.Services
                     Criticite = 5,
                     ScoreSante = 72,
                     ScoreRisque = 74,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 6, 20),
                     ProchaineVisitePrevue = new DateTime(2026, 8, 18)
                 };
@@ -383,14 +383,14 @@ namespace TechnoVIS.Services
                 var eq3 = new Equipement
                 {
                     SerialNumber = "EQ-COMP-01",
-                    Nom = "Compresseur à vis lubrifiée Atlas Copco GA 75 VSD",
+                    Nom = "Compresseur Ã  vis lubrifiÃ©e Atlas Copco GA 75 VSD",
                     Categorie = "Compresseur",
                     SiteId = siteMelloussa.Id,
                     DateInstallation = new DateTime(2020, 2, 14),
                     Criticite = 4,
                     ScoreSante = 88,
                     ScoreRisque = 35,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 7, 28),
                     ProchaineVisitePrevue = new DateTime(2026, 9, 10)
                 };
@@ -398,14 +398,14 @@ namespace TechnoVIS.Services
                 var eq4 = new Equipement
                 {
                     SerialNumber = "EQ-GEN-01",
-                    Nom = "Groupe Électrogène Caterpillar C18 700 kVA",
-                    Categorie = "Groupe Électrogène",
+                    Nom = "Groupe Ã‰lectrogÃ¨ne Caterpillar C18 700 kVA",
+                    Categorie = "Groupe Ã‰lectrogÃ¨ne",
                     SiteId = siteTangerLog.Id,
                     DateInstallation = new DateTime(2022, 8, 5),
                     Criticite = 5,
                     ScoreSante = 92,
                     ScoreRisque = 22,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 8, 2),
                     ProchaineVisitePrevue = new DateTime(2026, 9, 2)
                 };
@@ -420,7 +420,7 @@ namespace TechnoVIS.Services
                     Criticite = 4,
                     ScoreSante = 80,
                     ScoreRisque = 45,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 7, 5),
                     ProchaineVisitePrevue = new DateTime(2026, 8, 28)
                 };
@@ -450,7 +450,7 @@ namespace TechnoVIS.Services
                     Criticite = 5,
                     ScoreSante = 85,
                     ScoreRisque = 68,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 7, 22),
                     ProchaineVisitePrevue = new DateTime(2026, 8, 30)
                 };
@@ -458,14 +458,14 @@ namespace TechnoVIS.Services
                 var eq8 = new Equipement
                 {
                     SerialNumber = "EQ-AUTO-01",
-                    Nom = "Automate de régulation Siemens S7-1500 & Scada WinCC",
+                    Nom = "Automate de rÃ©gulation Siemens S7-1500 & Scada WinCC",
                     Categorie = "Automatisme",
                     SiteId = siteMelloussa.Id,
                     DateInstallation = new DateTime(2023, 3, 15),
                     Criticite = 4,
                     ScoreSante = 95,
                     ScoreRisque = 18,
-                    Statut = "Opérationnel",
+                    Statut = "OpÃ©rationnel",
                     DerniereVisite = new DateTime(2026, 8, 1),
                     ProchaineVisitePrevue = new DateTime(2026, 9, 15)
                 };
@@ -477,8 +477,8 @@ namespace TechnoVIS.Services
                 var v1 = new Visite
                 {
                     Reference = "VIS-2026-0801",
-                    TypeVisite = "Préventive",
-                    Description = "Inspection trimestrielle du groupe froid : relevé pressions HP/BP, vérification étanchéité fluide R134a et serrage électrique.",
+                    TypeVisite = "PrÃ©ventive",
+                    Description = "Inspection trimestrielle du groupe froid : relevÃ© pressions HP/BP, vÃ©rification Ã©tanchÃ©itÃ© fluide R134a et serrage Ã©lectrique.",
                     EquipementId = eq1.Id,
                     TechnicienId = techKarim.Id,
                     MarcheId = marcheHvac.Id,
@@ -486,9 +486,9 @@ namespace TechnoVIS.Services
                     DateRealisee = new DateTime(2026, 8, 10, 11, 45, 0),
                     DureeEstimeeMinutes = 150,
                     DureeReelleMinutes = 165,
-                    Statut = "Validée",
+                    Statut = "ValidÃ©e",
                     ScorePriorite = 65.0,
-                    RapportTechnique = "Relevé des pressions conforme (HP 14.2 bar, BP 3.8 bar). Nettoyage des filtres condenseurs effectué.",
+                    RapportTechnique = "RelevÃ© des pressions conforme (HP 14.2 bar, BP 3.8 bar). Nettoyage des filtres condenseurs effectuÃ©.",
                     ActionsCorrectives = "Resserrage des bornes du compresseur 1 et appoint d'huile frigorifique 0.8L."
                 };
 
@@ -496,7 +496,7 @@ namespace TechnoVIS.Services
                 {
                     Reference = "VIS-2026-0802",
                     TypeVisite = "Curative",
-                    Description = "Remplacement des filtres d'admission et contrôle thermique par thermographie infrarouge sur la CTA 02.",
+                    Description = "Remplacement des filtres d'admission et contrÃ´le thermique par thermographie infrarouge sur la CTA 02.",
                     EquipementId = eq6.Id,
                     TechnicienId = techKarim.Id,
                     MarcheId = marcheHvac.Id,
@@ -512,7 +512,7 @@ namespace TechnoVIS.Services
                 {
                     Reference = "VIS-2026-0803",
                     TypeVisite = "Audit",
-                    Description = "Prélèvement d'huile diélectrique et contrôle du relais Buchholz du transformateur Trihal 1600kVA.",
+                    Description = "PrÃ©lÃ¨vement d'huile diÃ©lectrique et contrÃ´le du relais Buchholz du transformateur Trihal 1600kVA.",
                     EquipementId = eq2.Id,
                     TechnicienId = techYoussef.Id,
                     MarcheId = marcheHt.Id,
@@ -527,14 +527,14 @@ namespace TechnoVIS.Services
                 var v4 = new Visite
                 {
                     Reference = "VIS-2026-0804",
-                    TypeVisite = "Préventive",
-                    Description = "Essai de démarrage en charge et analyse des vibrations alternateur sur le groupe électrogène C18.",
+                    TypeVisite = "PrÃ©ventive",
+                    Description = "Essai de dÃ©marrage en charge et analyse des vibrations alternateur sur le groupe Ã©lectrogÃ¨ne C18.",
                     EquipementId = eq4.Id,
                     TechnicienId = techOmar.Id,
                     MarcheId = marcheSecours.Id,
                     DatePrevue = new DateTime(2026, 8, 26, 9, 30, 0),
                     DureeEstimeeMinutes = 120,
-                    Statut = "Planifiée",
+                    Statut = "PlanifiÃ©e",
                     ScorePriorite = 55.0
                 };
 
@@ -542,35 +542,35 @@ namespace TechnoVIS.Services
                 {
                     Reference = "VIS-2026-0805",
                     TypeVisite = "Diagnostic",
-                    Description = "Contrôle thermographique infrarouge des départs TGBT et vérification de déclenchement différentiel.",
+                    Description = "ContrÃ´le thermographique infrarouge des dÃ©parts TGBT et vÃ©rification de dÃ©clenchement diffÃ©rentiel.",
                     EquipementId = eq5.Id,
                     TechnicienId = techKarim.Id,
                     MarcheId = marcheHvac.Id,
                     DatePrevue = new DateTime(2026, 8, 28, 14, 0, 0),
                     DureeEstimeeMinutes = 120,
-                    Statut = "Planifiée",
+                    Statut = "PlanifiÃ©e",
                     ScorePriorite = 60.0
                 };
 
                 var v6 = new Visite
                 {
                     Reference = "VIS-2026-0806",
-                    TypeVisite = "Préventive",
-                    Description = "Vidange huile synthétique et changement séparateur air/huile sur compresseur Atlas Copco.",
+                    TypeVisite = "PrÃ©ventive",
+                    Description = "Vidange huile synthÃ©tique et changement sÃ©parateur air/huile sur compresseur Atlas Copco.",
                     EquipementId = eq3.Id,
                     TechnicienId = techOmar.Id,
                     MarcheId = marcheFluides.Id,
                     DatePrevue = new DateTime(2026, 9, 2, 8, 30, 0),
                     DureeEstimeeMinutes = 180,
-                    Statut = "Planifiée",
+                    Statut = "PlanifiÃ©e",
                     ScorePriorite = 45.0
                 };
 
                 var v7 = new Visite
                 {
                     Reference = "VIS-2026-0701",
-                    TypeVisite = "Préventive",
-                    Description = "Contrôle du débit et étalonnage des transmetteurs de pression sur groupe incendie.",
+                    TypeVisite = "PrÃ©ventive",
+                    Description = "ContrÃ´le du dÃ©bit et Ã©talonnage des transmetteurs de pression sur groupe incendie.",
                     EquipementId = eq7.Id,
                     TechnicienId = techOmar.Id,
                     MarcheId = marcheFluides.Id,
@@ -578,10 +578,10 @@ namespace TechnoVIS.Services
                     DateRealisee = new DateTime(2026, 7, 22, 12, 10, 0),
                     DureeEstimeeMinutes = 120,
                     DureeReelleMinutes = 130,
-                    Statut = "Validée",
+                    Statut = "ValidÃ©e",
                     ScorePriorite = 40.0,
-                    RapportTechnique = "Pression d'enclenchement 8.5 bar, pression d'arrêt 12 bar conforme au cahier des charges.",
-                    ActionsCorrectives = "Remplacement du manomètre glycérine défectueux."
+                    RapportTechnique = "Pression d'enclenchement 8.5 bar, pression d'arrÃªt 12 bar conforme au cahier des charges.",
+                    ActionsCorrectives = "Remplacement du manomÃ¨tre glycÃ©rine dÃ©fectueux."
                 };
 
                 context.Visites.AddRange(v1, v2, v3, v4, v5, v6, v7);
@@ -590,3 +590,4 @@ namespace TechnoVIS.Services
         }
     }
 }
+

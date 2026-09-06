@@ -1,18 +1,18 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
 using System.Reflection;
-using TechnoVIS.Controllers;
+using Raven.Controllers;
 using Xunit;
 
-namespace TechnoVIS.Tests
+namespace Raven.Tests
 {
     public class SecurityAndAuthorizationTests
     {
         [Fact]
         public void DashboardController_EstProtegeParRoleResponsable()
         {
-            // Vérifie que le contrôleur Dashboard complet exige le rôle Responsable
+            // VÃ©rifie que le contrÃ´leur Dashboard complet exige le rÃ´le Responsable
             var authAttr = typeof(DashboardController).GetCustomAttribute<AuthorizeAttribute>();
             Assert.NotNull(authAttr);
             Assert.Equal("Responsable", authAttr.Roles);
@@ -24,11 +24,11 @@ namespace TechnoVIS.Tests
             var method = typeof(DashboardController).GetMethod(nameof(DashboardController.ResetData));
             Assert.NotNull(method);
 
-            // Vérifie qu'il n'y a pas d'échappement anonyme [AllowAnonymous]
+            // VÃ©rifie qu'il n'y a pas d'Ã©chappement anonyme [AllowAnonymous]
             var allowAnon = method.GetCustomAttribute<AllowAnonymousAttribute>();
             Assert.Null(allowAnon);
 
-            // Vérifie que la classe exige bien le rôle Responsable
+            // VÃ©rifie que la classe exige bien le rÃ´le Responsable
             var classAuth = typeof(DashboardController).GetCustomAttribute<AuthorizeAttribute>();
             Assert.NotNull(classAuth);
             Assert.Contains("Responsable", classAuth.Roles);
@@ -76,3 +76,4 @@ namespace TechnoVIS.Tests
         }
     }
 }
+

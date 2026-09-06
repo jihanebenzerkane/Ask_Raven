@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
+using Raven.Data;
+using Raven.Models;
 
-namespace TechnoVIS.Controllers;
+namespace Raven.Controllers;
 
 [ApiController]
 [Route("api/settings")]
@@ -24,9 +24,9 @@ public class SettingsController : ControllerBase
     // GET /api/settings
     // ============================================================
     //
-    // Accessible à tout utilisateur authentifié.
-    // Crée la ligne de configuration par défaut si elle n'existe
-    // pas encore (premier démarrage ou base réinitialisée).
+    // Accessible Ã  tout utilisateur authentifiÃ©.
+    // CrÃ©e la ligne de configuration par dÃ©faut si elle n'existe
+    // pas encore (premier dÃ©marrage ou base rÃ©initialisÃ©e).
     // ============================================================
 
     [HttpGet]
@@ -42,10 +42,10 @@ public class SettingsController : ControllerBase
             _context.ApplicationSettings.Add(settings);
             await _context.SaveChangesAsync();
         }
-        else if (settings.CompanyName == "TechnoVIS")
+        else if (settings.CompanyName == "Raven")
         {
             settings.CompanyName = "Raven";
-            settings.CompanySlogan = "Oracle NetSuite Cloud ERP · Maintenance & Planification";
+            settings.CompanySlogan = "Oracle NetSuite Cloud ERP Â· Maintenance & Planification";
             await _context.SaveChangesAsync();
         }
 
@@ -86,7 +86,7 @@ public class SettingsController : ControllerBase
             return BadRequest(new
             {
                 message =
-                    "Le nombre d'heures hebdomadaires doit être supérieur à 0."
+                    "Le nombre d'heures hebdomadaires doit Ãªtre supÃ©rieur Ã  0."
             });
         }
 
@@ -94,7 +94,7 @@ public class SettingsController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Le SLA doit être supérieur à 0."
+                message = "Le SLA doit Ãªtre supÃ©rieur Ã  0."
             });
         }
 
@@ -103,7 +103,7 @@ public class SettingsController : ControllerBase
             return BadRequest(new
             {
                 message =
-                    "La durée de visite doit être supérieure à 0."
+                    "La durÃ©e de visite doit Ãªtre supÃ©rieure Ã  0."
             });
         }
 
@@ -174,7 +174,7 @@ public class SettingsController : ControllerBase
                     "Safi",
                     "Marrakech",
                     "Agadir",
-                    "Fès"
+                    "FÃ¨s"
                 })
         };
     }
@@ -242,3 +242,4 @@ public class ApplicationSettingsDto
 
     public DateTime UpdatedAt { get; set; }
 }
+

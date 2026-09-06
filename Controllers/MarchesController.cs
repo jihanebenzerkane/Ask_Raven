@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+using Raven.Data;
+using Raven.Models;
+using Raven.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TechnoVIS.Controllers
+namespace Raven.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -65,7 +65,7 @@ namespace TechnoVIS.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Marche model)
         {
-            if (model == null) return BadRequest("Données de marché invalides.");
+            if (model == null) return BadRequest("DonnÃ©es de marchÃ© invalides.");
 
             if (string.IsNullOrWhiteSpace(model.CodeMarche))
             {
@@ -82,7 +82,7 @@ namespace TechnoVIS.Controllers
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
 
-        // ── Excel Import ────────────────────────────────────────────────────
+        // â”€â”€ Excel Import â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// POST /api/marches/import/preview
@@ -96,7 +96,7 @@ namespace TechnoVIS.Controllers
                 return BadRequest(new { error = "Aucun fichier fourni." });
 
             if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-                return BadRequest(new { error = "Le fichier doit être au format .xlsx." });
+                return BadRequest(new { error = "Le fichier doit Ãªtre au format .xlsx." });
 
             try
             {
@@ -145,7 +145,7 @@ namespace TechnoVIS.Controllers
         public async Task<IActionResult> ImportConfirm([FromBody] List<MarcheImportRow> rows)
         {
             if (rows == null || rows.Count == 0)
-                return BadRequest(new { error = "Aucune ligne à importer." });
+                return BadRequest(new { error = "Aucune ligne Ã  importer." });
 
             var strategy = _context.Database.CreateExecutionStrategy();
 
@@ -177,7 +177,7 @@ namespace TechnoVIS.Controllers
                             continue;
                         }
 
-                        // ── 1. Resolve or create Client ────────────────────────
+                        // â”€â”€ 1. Resolve or create Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                         var clientNom = string.IsNullOrWhiteSpace(row.ClientNom) ? "Client Inconnu" : row.ClientNom.Trim();
                         var client = existingClients
                             .FirstOrDefault(c => string.Equals(c.NomSociete, clientNom, StringComparison.OrdinalIgnoreCase));
@@ -203,8 +203,8 @@ namespace TechnoVIS.Controllers
                             existingClients.Add(client);
                         }
 
-                        // ── 2. Calculate Statut from DateFin vs today ──────────
-                        var statut = row.DateFin.Date >= DateTime.Today ? "Actif" : "Expiré";
+                        // â”€â”€ 2. Calculate Statut from DateFin vs today â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                        var statut = row.DateFin.Date >= DateTime.Today ? "Actif" : "ExpirÃ©";
                         
                         string refCode;
                         if (!string.IsNullOrWhiteSpace(row.Reference))
@@ -217,7 +217,7 @@ namespace TechnoVIS.Controllers
                             refCode = $"MAR-{DateTime.Now.Year}-{marcheSeq:D4}";
                         }
 
-                        // ── 3. Resolve or update Marche ────────────────────────
+                        // â”€â”€ 3. Resolve or update Marche â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                         var existingMarche = existingMarches
                             .FirstOrDefault(m => string.Equals(m.CodeMarche, refCode, StringComparison.OrdinalIgnoreCase));
 
@@ -272,7 +272,7 @@ namespace TechnoVIS.Controllers
                             imported++;
                         }
 
-                        // ── 4. Create Site record if Sites is specified ────────
+                        // â”€â”€ 4. Create Site record if Sites is specified â”€â”€â”€â”€â”€â”€â”€â”€
                         Site? primarySite = null;
                         if (!string.IsNullOrWhiteSpace(row.Sites))
                         {
@@ -304,7 +304,7 @@ namespace TechnoVIS.Controllers
                             }
                         }
 
-                        // ── 5. Generate Equipment entries if specified ─────────
+                        // â”€â”€ 5. Generate Equipment entries if specified â”€â”€â”€â”€â”€â”€â”€â”€â”€
                         if (primarySite != null)
                         {
                             void AddEquipIfAbsent(string nom, string categorie, int count)
@@ -318,14 +318,14 @@ namespace TechnoVIS.Controllers
                                     _context.Equipements.Add(new Equipement
                                     {
                                         SerialNumber = serial,
-                                        Nom = $"{nom} ({count} unités)",
+                                        Nom = $"{nom} ({count} unitÃ©s)",
                                         Categorie = categorie,
                                         SiteId = primarySite.Id,
                                         DateInstallation = row.DateDebut,
                                         Criticite = 3,
                                         ScoreSante = 85,
                                         ScoreRisque = 25,
-                                        Statut = "Opérationnel",
+                                        Statut = "OpÃ©rationnel",
                                         DerniereVisite = row.DateDebut,
                                         ProchaineVisitePrevue = row.DateDebut.AddMonths(3)
                                     });
@@ -347,7 +347,7 @@ namespace TechnoVIS.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return StatusCode(500, new { error = $"Échec de la transaction d'import : {ex.Message}" });
+                    return StatusCode(500, new { error = $"Ã‰chec de la transaction d'import : {ex.Message}" });
                 }
             });
         }
@@ -363,8 +363,8 @@ namespace TechnoVIS.Controllers
 
             // Shared data
             var headers = new string[] {
-                "Référence", "Client", "Date début", "Date fin", "Type de contrat",
-                "Nb visite / An", "Nb visite réalisé", "PV", "Facture", "Statut", "Commentaire"
+                "RÃ©fÃ©rence", "Client", "Date dÃ©but", "Date fin", "Type de contrat",
+                "Nb visite / An", "Nb visite rÃ©alisÃ©", "PV", "Facture", "Statut", "Commentaire"
             };
             var data = marches.Select(m => new string[]
             {
@@ -384,7 +384,7 @@ namespace TechnoVIS.Controllers
             if (format == "pdf")
             {
                 if (pdfService == null) return StatusCode(500, "PDF service unavailable");
-                var pdfBytes = pdfService.GenerateTablePdf("Marchés & Clients", headers, data);
+                var pdfBytes = pdfService.GenerateTablePdf("MarchÃ©s & Clients", headers, data);
                 return File(pdfBytes, "application/pdf", $"Marches_{DateTime.Now:yyyyMMdd}.pdf");
             }
             else if (format == "csv")
@@ -396,7 +396,7 @@ namespace TechnoVIS.Controllers
             else // default: excel
             {
                 using var workbook = new ClosedXML.Excel.XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("Marchés");
+                var worksheet = workbook.Worksheets.Add("MarchÃ©s");
                 for (int c = 0; c < headers.Length; c++)
                     worksheet.Cell(1, c + 1).Value = headers[c];
                 var headerRange = worksheet.Range(1, 1, 1, headers.Length);
@@ -413,3 +413,4 @@ namespace TechnoVIS.Controllers
         }
     }
 }
+

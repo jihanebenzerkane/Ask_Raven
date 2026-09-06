@@ -1,11 +1,11 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using System;
 using System.IO;
 using System.Linq;
-using TechnoVIS.Services;
+using Raven.Services;
 using Xunit;
 
-namespace TechnoVIS.Tests
+namespace Raven.Tests
 {
     public class ExcelImportServiceTests
     {
@@ -18,19 +18,19 @@ namespace TechnoVIS.Tests
             using (var wb = new XLWorkbook())
             {
                 var ws = wb.Worksheets.Add("Marches");
-                ws.Cell(1, 1).Value = "Marché";
+                ws.Cell(1, 1).Value = "MarchÃ©";
                 ws.Cell(1, 2).Value = "Client";
-                ws.Cell(1, 3).Value = "Date début";
+                ws.Cell(1, 3).Value = "Date dÃ©but";
                 ws.Cell(1, 4).Value = "Date fin";
                 ws.Cell(1, 5).Value = "Type de contrat";
-                ws.Cell(1, 6).Value = "Visites prévues";
+                ws.Cell(1, 6).Value = "Visites prÃ©vues";
                 ws.Cell(1, 7).Value = "Sites";
 
                 ws.Cell(2, 1).Value = "MCH-2026-001";
                 ws.Cell(2, 2).Value = "Maroc Telecom";
                 ws.Cell(2, 3).Value = new DateTime(2026, 1, 1);
                 ws.Cell(2, 4).Value = new DateTime(2026, 12, 31);
-                ws.Cell(2, 5).Value = "Maintenance Préventive";
+                ws.Cell(2, 5).Value = "Maintenance PrÃ©ventive";
                 ws.Cell(2, 6).Value = 12;
                 ws.Cell(2, 7).Value = "Casablanca, Rabat";
 
@@ -71,12 +71,12 @@ namespace TechnoVIS.Tests
             using (var wb = new XLWorkbook())
             {
                 var ws = wb.Worksheets.Add("Equipements");
-                ws.Cell(1, 1).Value = "Numéro Série";
+                ws.Cell(1, 1).Value = "NumÃ©ro SÃ©rie";
                 ws.Cell(1, 2).Value = "Nom";
-                ws.Cell(1, 3).Value = "Catégorie";
+                ws.Cell(1, 3).Value = "CatÃ©gorie";
                 ws.Cell(1, 4).Value = "Client";
                 ws.Cell(1, 5).Value = "Site";
-                ws.Cell(1, 6).Value = "Criticité";
+                ws.Cell(1, 6).Value = "CriticitÃ©";
 
                 ws.Cell(2, 1).Value = "SN-HVAC-999";
                 ws.Cell(2, 2).Value = "Groupe Froid Central";
@@ -108,10 +108,10 @@ namespace TechnoVIS.Tests
                 var ws = wb.Worksheets.Add("Techniciens");
                 ws.Cell(1, 1).Value = "Matricule";
                 ws.Cell(1, 2).Value = "Nom";
-                ws.Cell(1, 3).Value = "Prénom";
+                ws.Cell(1, 3).Value = "PrÃ©nom";
                 ws.Cell(1, 4).Value = "Email";
                 ws.Cell(1, 5).Value = "Base";
-                ws.Cell(1, 6).Value = "Spécialités";
+                ws.Cell(1, 6).Value = "SpÃ©cialitÃ©s";
 
                 ws.Cell(2, 1).Value = "TECH-4001";
                 ws.Cell(2, 2).Value = "Bennani";
@@ -158,3 +158,4 @@ namespace TechnoVIS.Tests
         }
     }
 }
+

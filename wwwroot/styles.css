@@ -2306,7 +2306,7 @@ body.suite-layout .content-area {
 }
 
 /* ==========================================================================
-   Oracle NetSuite Authentic Authentication & Modal Pattern Styling
+    Authentic Authentication & Modal Pattern Styling
    ========================================================================== */
 
 /* Auth Background with deep sleek navy industrial vignette (no grid squares) */
@@ -2499,7 +2499,7 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   Oracle NetSuite Next "Ask Oracle" Assistant & Modern Data Table Styling
+    Next Assistant & Modern Data Table Styling
    ========================================================================== */
 
 /* Authentic Raven Intelligent Assistant Floating Pill (Azure AI Document Intelligence) */
@@ -2770,7 +2770,7 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   ORACLE NETSUITE AUTHENTIC ENTERPRISE STYLING FOR ALL INNER PAGES
+    AUTHENTIC ENTERPRISE STYLING FOR ALL INNER PAGES
    (Planification, Équipements, Techniciens, Marchés & Clients, Mode Terrain)
    ========================================================================== */
 
@@ -3099,4 +3099,4 @@ body.suite-layout .event-chip[data-statut="Validée"] {
   background: #f0fdf4 !important;
 }
 
-
+

@@ -5,7 +5,7 @@ services:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-      DB_CONNECTION_STRING: "Server=db;Database=TechnoVIS;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;"
+      DB_CONNECTION_STRING: "Server=db;Database=Raven;User Id=sa;Password=${DB_SA_PASSWORD};TrustServerCertificate=True;Encrypt=False;"
     depends_on:
       db:
         condition: service_healthy

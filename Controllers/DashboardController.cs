@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TechnoVIS.Data;
+using Raven.Data;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TechnoVIS.Controllers
+namespace Raven.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -25,9 +25,9 @@ namespace TechnoVIS.Controllers
         {
             var today = DateTime.Today;
             var totalVisites = await _context.Visites.CountAsync();
-            var visitesPlanifiees = await _context.Visites.CountAsync(v => v.Statut == "Planifiée" && v.DatePrevue >= today);
-            var visitesEnRetard = await _context.Visites.CountAsync(v => v.Statut == "En retard" || (v.Statut == "Planifiée" && v.DatePrevue < today));
-            var visitesValidees = await _context.Visites.CountAsync(v => v.Statut == "Validée");
+            var visitesPlanifiees = await _context.Visites.CountAsync(v => v.Statut == "PlanifiÃ©e" && v.DatePrevue >= today);
+            var visitesEnRetard = await _context.Visites.CountAsync(v => v.Statut == "En retard" || (v.Statut == "PlanifiÃ©e" && v.DatePrevue < today));
+            var visitesValidees = await _context.Visites.CountAsync(v => v.Statut == "ValidÃ©e");
 
             var totalEquipements = await _context.Equipements.CountAsync();
             var equipementsCritiques = await _context.Equipements.CountAsync(e => e.ScoreRisque >= 70);
@@ -36,7 +36,7 @@ namespace TechnoVIS.Controllers
             var alertesVisites = await _context.Visites
                 .Include(v => v.Equipement)
                 .ThenInclude(e => e!.Site)
-                .Where(v => v.Statut == "En retard" || (v.Statut == "Planifiée" && v.DatePrevue < today) || v.ScorePriorite >= 80)
+                .Where(v => v.Statut == "En retard" || (v.Statut == "PlanifiÃ©e" && v.DatePrevue < today) || v.ScorePriorite >= 80)
                 .OrderByDescending(v => v.ScorePriorite)
                 .Take(5)
                 .Select(v => new
@@ -80,7 +80,7 @@ namespace TechnoVIS.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Vider complètement toutes les tables opérationnelles
+                // Vider complÃ¨tement toutes les tables opÃ©rationnelles
                 var usersWithTech = await _context.Utilisateurs.Where(u => u.TechnicienId != null).ToListAsync();
                 foreach (var u in usersWithTech)
                 {
@@ -100,7 +100,7 @@ namespace TechnoVIS.Controllers
 
                 return Ok(new
                 {
-                    message = "Toutes les tables ont été réinitialisées avec succès.",
+                    message = "Toutes les tables ont Ã©tÃ© rÃ©initialisÃ©es avec succÃ¨s.",
                     clients = 0,
                     sites = 0,
                     techniciens = 0,
@@ -121,19 +121,20 @@ namespace TechnoVIS.Controllers
         {
             try
             {
-                await TechnoVIS.Services.DbSeeder.SeedAsync(_context, force: true);
+                await Raven.Services.DbSeeder.SeedAsync(_context, force: true);
                 var stats = await GetStats();
                 return Ok(new
                 {
-                    message = "Données industrielles démo Raven ERP initialisées avec succès dans SQL Server.",
+                    message = "DonnÃ©es industrielles dÃ©mo Raven ERP initialisÃ©es avec succÃ¨s dans SQL Server.",
                     stats
                 });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = $"Erreur lors de l'initialisation des données : {ex.Message}" });
+                return StatusCode(500, new { error = $"Erreur lors de l'initialisation des donnÃ©es : {ex.Message}" });
             }
         }
     }
 }
+
 

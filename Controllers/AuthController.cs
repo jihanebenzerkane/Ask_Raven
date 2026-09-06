@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -11,11 +11,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+using Raven.Data;
+using Raven.Models;
+using Raven.Services;
 
-namespace TechnoVIS.Controllers;
+namespace Raven.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
 
 
     // ============================================================
-    // 1. LOGIN — STEP 1 (Email + Password)
+    // 1. LOGIN â€” STEP 1 (Email + Password)
     //    Returns a temp token for MFA step-2 instead of signing in.
     // ============================================================
 
@@ -101,7 +101,7 @@ public class AuthController : ControllerBase
             }
             else
             {
-                _logger.LogWarning("Tentative de connexion échouée : identifiant {Identifier} inconnu.", identifier);
+                _logger.LogWarning("Tentative de connexion Ã©chouÃ©e : identifiant {Identifier} inconnu.", identifier);
                 return Unauthorized(new
                 {
                     message = "Identifiant ou mot de passe incorrect."
@@ -112,10 +112,10 @@ public class AuthController : ControllerBase
         if (user.Role == "Technicien" &&
             (user.Technicien == null || !string.Equals(user.Technicien.Statut, "Actif", StringComparison.OrdinalIgnoreCase)))
         {
-            _logger.LogWarning("Connexion refusée : compte technicien inactif pour {Identifier}.", identifier);
+            _logger.LogWarning("Connexion refusÃ©e : compte technicien inactif pour {Identifier}.", identifier);
             return Unauthorized(new
             {
-                message = "Ce compte technicien a été désactivé. Veuillez contacter votre responsable."
+                message = "Ce compte technicien a Ã©tÃ© dÃ©sactivÃ©. Veuillez contacter votre responsable."
             });
         }
 
@@ -145,7 +145,7 @@ public class AuthController : ControllerBase
 
         if (!isPasswordValid)
         {
-            _logger.LogWarning("Tentative de connexion échouée : mot de passe invalide pour {Identifier}.", identifier);
+            _logger.LogWarning("Tentative de connexion Ã©chouÃ©e : mot de passe invalide pour {Identifier}.", identifier);
             return Unauthorized(new
             {
                 message = "Identifiant ou mot de passe incorrect."
@@ -190,11 +190,11 @@ public class AuthController : ControllerBase
             principal,
             authProperties);
 
-        _logger.LogInformation("Connexion réussie pour {Email} ({Role}) sur Raven ERP.", user.Email, user.Role);
+        _logger.LogInformation("Connexion rÃ©ussie pour {Email} ({Role}) sur Raven ERP.", user.Email, user.Role);
 
         return Ok(new
         {
-            message = "Connexion réussie.",
+            message = "Connexion rÃ©ussie.",
             user = new
             {
                 user.Id,
@@ -210,7 +210,7 @@ public class AuthController : ControllerBase
 
 
     // ============================================================
-    // 2. VERIFY OTP — STEP 2 (MFA code verification)
+    // 2. VERIFY OTP â€” STEP 2 (MFA code verification)
     //    On success, sets the auth cookie and returns the user payload.
     // ============================================================
 
@@ -229,7 +229,7 @@ public class AuthController : ControllerBase
 
         if (rawCode.Length != 6 || !rawCode.All(char.IsDigit))
         {
-            return BadRequest(new { message = "Le code doit être composé de 6 chiffres." });
+            return BadRequest(new { message = "Le code doit Ãªtre composÃ© de 6 chiffres." });
         }
 
         var codeHash = HashValue(rawCode);
@@ -258,14 +258,14 @@ public class AuthController : ControllerBase
                 return Unauthorized(new
                 {
                     message = expired
-                        ? "Le code de vérification a expiré. Veuillez en demander un nouveau."
-                        : "Code de vérification incorrect."
+                        ? "Le code de vÃ©rification a expirÃ©. Veuillez en demander un nouveau."
+                        : "Code de vÃ©rification incorrect."
                 });
             }
 
             return Unauthorized(new
             {
-                message = "Session expirée. Veuillez recommencer la connexion."
+                message = "Session expirÃ©e. Veuillez recommencer la connexion."
             });
         }
 
@@ -312,11 +312,11 @@ public class AuthController : ControllerBase
             principal,
             authProperties);
 
-        _logger.LogInformation("MFA vérifié — connexion réussie pour {Email} ({Role}).", user.Email, user.Role);
+        _logger.LogInformation("MFA vÃ©rifiÃ© â€” connexion rÃ©ussie pour {Email} ({Role}).", user.Email, user.Role);
 
         return Ok(new
         {
-            message = "Connexion réussie.",
+            message = "Connexion rÃ©ussie.",
             user = new
             {
                 user.Id,
@@ -357,7 +357,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Session introuvable ou expirée. Veuillez recommencer la connexion."
+                message = "Session introuvable ou expirÃ©e. Veuillez recommencer la connexion."
             });
         }
 
@@ -374,13 +374,13 @@ public class AuthController : ControllerBase
         // Issue a fresh OTP with the same temp token (reused for frontend state)
         var newTempToken = await IssueMfaChallengeAsync(existing.Utilisateur, model.TempToken);
 
-        _logger.LogInformation("Code OTP renvoyé pour {Email}.", existing.Utilisateur.Email);
+        _logger.LogInformation("Code OTP renvoyÃ© pour {Email}.", existing.Utilisateur.Email);
 
         return Ok(new
         {
             tempToken = newTempToken,
             maskedEmail = MaskEmail(existing.Utilisateur.Email),
-            message = "Un nouveau code de vérification a été envoyé."
+            message = "Un nouveau code de vÃ©rification a Ã©tÃ© envoyÃ©."
         });
     }
 
@@ -404,7 +404,7 @@ public class AuthController : ControllerBase
 
         Response.Cookies.Delete(".AspNetCore.Cookies");
         Response.Cookies.Delete("RavenAuth");
-        return Ok(new { message = "Déconnexion réussie." });
+        return Ok(new { message = "DÃ©connexion rÃ©ussie." });
     }
 
 
@@ -470,17 +470,17 @@ public class AuthController : ControllerBase
         var user = await _context.Utilisateurs
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email);
 
-        // Si l'utilisateur n'existe pas, renvoyer le message générique sans envoyer d'e-mail
+        // Si l'utilisateur n'existe pas, renvoyer le message gÃ©nÃ©rique sans envoyer d'e-mail
         if (user == null)
         {
-            _logger.LogInformation("Demande de réinitialisation pour un e-mail non enregistré : {Email}", email);
+            _logger.LogInformation("Demande de rÃ©initialisation pour un e-mail non enregistrÃ© : {Email}", email);
             return Ok(new
             {
-                message = "Si un compte correspond à cette adresse, un lien de réinitialisation vous a été envoyé."
+                message = "Si un compte correspond Ã  cette adresse, un lien de rÃ©initialisation vous a Ã©tÃ© envoyÃ©."
             });
         }
 
-        // Générer 32 octets aléatoires cryptographiquement sûrs
+        // GÃ©nÃ©rer 32 octets alÃ©atoires cryptographiquement sÃ»rs
         var rawToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32)).ToLowerInvariant();
         var tokenHash = HashValue(rawToken);
 
@@ -500,17 +500,17 @@ public class AuthController : ControllerBase
 
         await _emailService.SendPasswordResetEmailAsync(user.Email, resetLink);
 
-        _logger.LogInformation("Lien de réinitialisation généré et envoyé à {Email}.", user.Email);
+        _logger.LogInformation("Lien de rÃ©initialisation gÃ©nÃ©rÃ© et envoyÃ© Ã  {Email}.", user.Email);
 
         return Ok(new
         {
-            message = "Si un compte correspond à cette adresse, un lien de réinitialisation vous a été envoyé."
+            message = "Si un compte correspond Ã  cette adresse, un lien de rÃ©initialisation vous a Ã©tÃ© envoyÃ©."
         });
     }
 
 
     // ============================================================
-    // 7. RESET PASSWORD (Vérification Hash + Nouveau mot de passe)
+    // 7. RESET PASSWORD (VÃ©rification Hash + Nouveau mot de passe)
     // ============================================================
 
     [HttpPost("reset-password")]
@@ -539,7 +539,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Le mot de passe doit comporter au moins 8 caractères."
+                message = "Le mot de passe doit comporter au moins 8 caractÃ¨res."
             });
         }
 
@@ -556,7 +556,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Le lien de réinitialisation est invalide ou a expiré."
+                message = "Le lien de rÃ©initialisation est invalide ou a expirÃ©."
             });
         }
 
@@ -566,17 +566,17 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Mot de passe réinitialisé avec succès pour l'utilisateur {Email}.", tokenRecord.Utilisateur.Email);
+        _logger.LogInformation("Mot de passe rÃ©initialisÃ© avec succÃ¨s pour l'utilisateur {Email}.", tokenRecord.Utilisateur.Email);
 
         return Ok(new
         {
-            message = "Votre mot de passe a été modifié avec succès."
+            message = "Votre mot de passe a Ã©tÃ© modifiÃ© avec succÃ¨s."
         });
     }
 
 
     // ============================================================
-    // 8. CHANGE PASSWORD (Utilisateur authentifié)
+    // 8. CHANGE PASSWORD (Utilisateur authentifiÃ©)
     // ============================================================
 
     [HttpPost("change-password")]
@@ -590,7 +590,7 @@ public class AuthController : ControllerBase
 
         if (model.NewPassword.Length < 8)
         {
-            return BadRequest(new { message = "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+            return BadRequest(new { message = "Le nouveau mot de passe doit contenir au moins 8 caractÃ¨res." });
         }
 
         var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -616,7 +616,7 @@ public class AuthController : ControllerBase
         user.PasswordHash = hasher.HashPassword(user, model.NewPassword);
         await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Mot de passe modifié avec succès." });
+        return Ok(new { message = "Mot de passe modifiÃ© avec succÃ¨s." });
     }
 
 
@@ -631,7 +631,7 @@ public class AuthController : ControllerBase
     /// </summary>
     private async Task<string> IssueMfaChallengeAsync(Utilisateur user, string? reuseTempToken = null)
     {
-        // 6-digit numeric code — e.g. "483921"
+        // 6-digit numeric code â€” e.g. "483921"
         var rawCode = RandomNumberGenerator.GetInt32(100_000, 999_999 + 1).ToString("D6");
         var codeHash = HashValue(rawCode);
 
@@ -650,28 +650,28 @@ public class AuthController : ControllerBase
         _context.OtpCodes.Add(otp);
         await _context.SaveChangesAsync();
 
-        // Send via email — also log to console as a development fallback
+        // Send via email â€” also log to console as a development fallback
         _logger.LogInformation("[MFA] Code OTP pour {Email} : {Code} (expire dans {Min} min)",
             user.Email, rawCode, (int)OtpExpiry.TotalMinutes);
 
         try
         {
-            var subject = "Raven ERP — Code de vérification";
+            var subject = "Raven ERP â€” Code de vÃ©rification";
             var body = $@"
 <div style=""font-family:Inter,sans-serif;max-width:480px;margin:0 auto;"">
-  <h2 style=""color:#0f172a;font-size:20px;margin-bottom:8px;"">Code de vérification Raven ERP</h2>
+  <h2 style=""color:#0f172a;font-size:20px;margin-bottom:8px;"">Code de vÃ©rification Raven ERP</h2>
   <p style=""color:#475569;font-size:14px;"">Utilisez le code ci-dessous pour finaliser votre connexion. Il est valable <strong>{(int)OtpExpiry.TotalMinutes} minutes</strong>.</p>
   <div style=""background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:28px;text-align:center;margin:20px 0;"">
     <span style=""font-size:40px;font-weight:700;letter-spacing:12px;color:#0f172a;font-family:monospace;"">{rawCode}</span>
   </div>
-  <p style=""color:#94a3b8;font-size:12px;"">Si vous n'avez pas demandé ce code, ignorez cet e-mail. Votre compte reste sécurisé.</p>
+  <p style=""color:#94a3b8;font-size:12px;"">Si vous n'avez pas demandÃ© ce code, ignorez cet e-mail. Votre compte reste sÃ©curisÃ©.</p>
 </div>";
             await _emailService.SendEmailAsync(user.Email, subject, body);
         }
         catch (Exception ex)
         {
-            // Don't fail the whole flow if email sending fails — the code is still logged
-            _logger.LogWarning(ex, "Envoi d'e-mail OTP échoué pour {Email}. Code disponible dans les logs.", user.Email);
+            // Don't fail the whole flow if email sending fails â€” the code is still logged
+            _logger.LogWarning(ex, "Envoi d'e-mail OTP Ã©chouÃ© pour {Email}. Code disponible dans les logs.", user.Email);
         }
 
         return tempToken;

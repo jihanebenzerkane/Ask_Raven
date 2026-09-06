@@ -1,17 +1,17 @@
-namespace TechnoVIS.Models;
+﻿namespace Raven.Models;
 
 public class ApplicationSetting
 {
     public int Id { get; set; }
 
     // ========================================================
-    // Identité entreprise
+    // IdentitÃ© entreprise
     // ========================================================
 
     public string CompanyName { get; set; } = "Raven";
 
     public string CompanySlogan { get; set; } =
-        "Oracle NetSuite Cloud ERP · Maintenance & Planification";
+        "Oracle NetSuite Cloud ERP Â· Maintenance & Planification";
 
     public string CompanyEmail { get; set; } = "";
     public string CompanyPhone { get; set; } = "";
@@ -27,7 +27,7 @@ public class ApplicationSetting
 
 
     // ========================================================
-    // Valeurs métier par défaut
+    // Valeurs mÃ©tier par dÃ©faut
     // ========================================================
 
     public int DefaultHours { get; set; } = 40;
@@ -38,7 +38,7 @@ public class ApplicationSetting
 
     // ========================================================
     // Agences / Bases
-    // Stockées en JSON car liste simple de strings.
+    // StockÃ©es en JSON car liste simple de strings.
     // ========================================================
 
     public string AgencesJson { get; set; } = "[]";
@@ -50,3 +50,4 @@ public class ApplicationSetting
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
+

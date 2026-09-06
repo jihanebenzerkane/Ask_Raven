@@ -1,32 +1,81 @@
+﻿using System.Security.Claims;
+using System.Threading.RateLimiting;
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+
 using QuestPDF.Infrastructure;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+
+using Raven.Data;
+using Raven.Models;
+using Raven.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//
+// ============================================================
+// RAVEN
+// Enterprise Maintenance Management Platform
+// ============================================================
+//
 
+
+// ------------------------------------------------------------
+// APPLICATION
+// ------------------------------------------------------------
+
+const string ApplicationName = "Raven";
+
+builder.Services.AddSingleton(new ApplicationInfo
+{
+    Name = ApplicationName,
+    FullName = "Raven Maintenance Management Platform"
+});
+
+
+// ------------------------------------------------------------
+// QUESTPDF
+// ------------------------------------------------------------
 
 QuestPDF.Settings.License = LicenseType.Community;
 
-// MVC / API
 
+// ------------------------------------------------------------
+// CONTROLLERS
+// ------------------------------------------------------------
 
-builder.Services.AddControllers()
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+
+        options.JsonSerializerOptions.PropertyNamingPolicy =
+            System.Text.Json.JsonNamingPolicy.CamelCase;
     });
 
-builder.Services.AddOpenApi();
-builder.Services.AddMemoryCache();
-builder.Services.AddScoped<IEmailService, EmailService>();
 
-// Application Services
+// ------------------------------------------------------------
+// OPENAPI
+// ------------------------------------------------------------
+
+builder.Services.AddOpenApi();
+
+
+// ------------------------------------------------------------
+// MEMORY CACHE
+// ------------------------------------------------------------
+
+builder.Services.AddMemoryCache();
+
+
+// ------------------------------------------------------------
+// APPLICATION SERVICES
+// ------------------------------------------------------------
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<ScoringService>();
 builder.Services.AddScoped<ExcelImportService>();
@@ -34,80 +83,141 @@ builder.Services.AddScoped<PdfExportService>();
 builder.Services.AddScoped<CsvExportService>();
 
 
-// Authentication - Cookie Authentication
-// ASP.NET Core uses this cookie for subsequent requests.
+// ------------------------------------------------------------
+// AUTHENTICATION
+// ------------------------------------------------------------
+//
+// IMPORTANT:
+//
+// This is the temporary/stable local authentication layer.
+//
+// Microsoft Entra ID will become the enterprise identity
+// provider after the local application is stable.
+//
+// Cookie name is now consistently Raven.Auth.
+// ------------------------------------------------------------
+
+var cookieName =
+    builder.Configuration["Authentication:CookieName"]
+    ?? "Raven.Auth";
 
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.Cookie.Name = "TechnoVIS.Auth";
+        options.Cookie.Name = cookieName;
 
-        // JavaScript cannot read the authentication cookie.
+        // JavaScript cannot directly read the authentication cookie.
         options.Cookie.HttpOnly = true;
 
-        // Suitable when frontend and backend are served
-        // from the same application.
+        // Same-site protection.
         options.Cookie.SameSite = SameSiteMode.Lax;
 
         // HTTPS in production.
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy =
+            CookieSecurePolicy.SameAsRequest;
 
-        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.ExpireTimeSpan = TimeSpan.FromHours(
+            builder.Configuration.GetValue<int?>(
+                "Authentication:SessionHours") ?? 8);
+
         options.SlidingExpiration = true;
 
-        // API should return status codes instead of
-        // redirecting to an HTML login page.
+        // Never redirect API calls to an HTML login page.
         options.Events.OnRedirectToLogin = context =>
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.StatusCode =
+                StatusCodes.Status401Unauthorized;
+
             return Task.CompletedTask;
         };
 
         options.Events.OnRedirectToAccessDenied = context =>
         {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            context.Response.StatusCode =
+                StatusCodes.Status403Forbidden;
+
             return Task.CompletedTask;
         };
     });
 
 
-// Authorization
+// ------------------------------------------------------------
+// AUTHORIZATION
+// ------------------------------------------------------------
 
-builder.Services.AddAuthorization();
-
-
-// Rate Limiting
-//
-// Protects sensitive endpoints such as login from brute-force
-// attempts.
-
-builder.Services.AddRateLimiter(options =>
+builder.Services.AddAuthorization(options =>
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    options.AddFixedWindowLimiter("LoginPolicy", limiterOptions =>
+    options.AddPolicy("ResponsableOnly", policy =>
     {
-        limiterOptions.PermitLimit = 10;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueProcessingOrder =
-            System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 0;
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Responsable");
+    });
+
+    options.AddPolicy("TechnicienOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Technicien");
+    });
+
+    options.AddPolicy("ResponsableOrTechnicien", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Responsable", "Technicien");
     });
 });
 
 
+// ------------------------------------------------------------
+// RATE LIMITING
+// ------------------------------------------------------------
+//
+// Protect authentication endpoints against brute-force attacks.
+// ------------------------------------------------------------
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("LoginPolicy", httpContext =>
+    {
+        var ip =
+            httpContext.Connection.RemoteIpAddress?
+                .ToString()
+            ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            ip,
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+
+                Window = TimeSpan.FromMinutes(1),
+
+                QueueProcessingOrder =
+                    QueueProcessingOrder.OldestFirst,
+
+                QueueLimit = 0,
+
+                AutoReplenishment = true
+            });
+    });
+});
+
+
+// ------------------------------------------------------------
 // CORS
+// ------------------------------------------------------------
 //
-// Only needed during local development if frontend/backend
-// are accessed from different origins.
-//
-// In production, the frontend is served by the same ASP.NET Core
-// application, so CORS is normally not required.
+// Development only.
+// In production Raven should normally serve frontend and API
+// from the same origin.
+// ------------------------------------------------------------
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DevCorsPolicy", policy =>
+    options.AddPolicy("DevelopmentCors", policy =>
     {
         policy
             .WithOrigins(
@@ -116,25 +226,59 @@ builder.Services.AddCors(options =>
                 "http://127.0.0.1:5196"
             )
             .AllowCredentials()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 
-// Database - SQL Server + Entity Framework Core
+// ------------------------------------------------------------
+// DATABASE CONNECTION
+// ------------------------------------------------------------
+//
+// PRIORITY:
+//
+// 1. DB_CONNECTION_STRING environment variable
+// 2. ConnectionStrings:DefaultConnection
+//
+// This allows us to keep credentials outside Git.
+// ------------------------------------------------------------
 
 var connectionString =
-    builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+    Environment.GetEnvironmentVariable(
+        "DB_CONNECTION_STRING");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString =
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection");
+}
 
 if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
-        "La chaîne de connexion SQL Server est requise. " +
-        "Configurez ConnectionStrings:DefaultConnection " +
-        "ou DB_CONNECTION_STRING.");
+        """
+        Raven ne peut pas dÃ©marrer car aucune chaÃ®ne
+        de connexion SQL Server n'est configurÃ©e.
+
+        Configurez la variable d'environnement:
+
+        DB_CONNECTION_STRING
+
+        Exemple:
+
+        Server=localhost,1433;Database=Raven;
+        User Id=sa;Password=...;
+        TrustServerCertificate=True;
+        """
+    );
 }
+
+
+// ------------------------------------------------------------
+// ENTITY FRAMEWORK / SQL SERVER
+// ------------------------------------------------------------
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -145,174 +289,307 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             sqlOptions.EnableRetryOnFailure(
                 maxRetryCount: 5,
                 maxRetryDelay: TimeSpan.FromSeconds(5),
-                errorNumbersToAdd: null);
+                errorNumbersToAdd: null
+            );
+
+            sqlOptions.CommandTimeout(30);
         });
-    options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+
+    options.EnableDetailedErrors(
+        builder.Environment.IsDevelopment());
+
+    options.EnableSensitiveDataLogging(false);
 });
 
+
+// ------------------------------------------------------------
+// BUILD
+// ------------------------------------------------------------
 
 var app = builder.Build();
 
 
-// Database initialization
+// ------------------------------------------------------------
+// DATABASE INITIALIZATION
+// ------------------------------------------------------------
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider
-        .GetRequiredService<AppDbContext>();
+    var logger =
+        scope.ServiceProvider
+            .GetRequiredService<
+                ILogger<Program>>();
 
-    // Apply EF Core migrations.
-    dbContext.Database.Migrate();
+    var db =
+        scope.ServiceProvider
+            .GetRequiredService<AppDbContext>();
 
-
-    // --------------------------------------------------------
-    // Default Specialites
-    // --------------------------------------------------------
-
-    if (!dbContext.Specialites.Any())
+    try
     {
-        var defaultSpecialites = new List<Specialite>
+        logger.LogInformation(
+            "Raven: testing SQL Server connection...");
+
+        var canConnect =
+            await db.Database.CanConnectAsync();
+
+        if (!canConnect)
         {
-            new()
-            {
-                Nom = "HVAC",
-                Description =
-                    "Climatisation, Chauffage, Ventilation et Groupes Froid"
-            },
+            throw new InvalidOperationException(
+                "Raven ne peut pas se connecter Ã  SQL Server.");
+        }
 
-            new()
-            {
-                Nom = "TGBT",
-                Description =
-                    "Tableaux Généraux Basse Tension et Armoires Électriques"
-            },
+        logger.LogInformation(
+            "Raven: SQL Server connection successful.");
 
-            new()
-            {
-                Nom = "Haute Tension",
-                Description =
-                    "Postes de Transformation et Cellules MT/HT"
-            },
+        //
+        // Apply EF Core migrations.
+        //
+        await db.Database.MigrateAsync();
 
-            new()
-            {
-                Nom = "Groupe Électrogène",
-                Description =
-                    "Groupes Électrogènes et Onduleurs de secours"
-            },
+        logger.LogInformation(
+            "Raven: database migrations completed.");
 
-            new()
-            {
-                Nom = "Compresseur",
-                Description =
-                    "Centrales d'air comprimé et pompes industrielles"
-            },
+        //
+        // ----------------------------------------------------
+        // DEFAULT SPECIALITIES
+        // ----------------------------------------------------
+        //
 
-            new()
-            {
-                Nom = "Automatisme",
-                Description =
-                    "Automates programmables, Télégestion et Régulation"
-            },
-
-            new()
-            {
-                Nom = "Électricité industrielle",
-                Description =
-                    "Installations et câblages électriques industriels"
-            },
-
-            new()
-            {
-                Nom = "Informatique & Réseau",
-                Description =
-                    "Serveurs, Postes, Baies de brassage et Switchs"
-            }
-        };
-
-        dbContext.Specialites.AddRange(defaultSpecialites);
-        dbContext.SaveChanges();
-    }
-
-
-    // --------------------------------------------------------
-    // Default ApplicationSettings
-    // --------------------------------------------------------
-
-    if (!dbContext.ApplicationSettings.Any())
-    {
-        var defaultSettings = new ApplicationSetting
+        if (!await db.Specialites.AnyAsync())
         {
-            AgencesJson = System.Text.Json.JsonSerializer.Serialize(
-                new[]
+            var specialites = new List<Specialite>
+            {
+                new()
                 {
-                    "Casablanca",
-                    "Rabat",
-                    "Tanger",
-                    "Safi",
-                    "Marrakech",
-                    "Agadir",
-                    "Fès"
-                })
-        };
+                    Nom = "HVAC",
+                    Description =
+                        "Climatisation, Chauffage, Ventilation et Groupes Froid"
+                },
 
-        dbContext.ApplicationSettings.Add(defaultSettings);
-        dbContext.SaveChanges();
+                new()
+                {
+                    Nom = "TGBT",
+                    Description =
+                        "Tableaux GÃ©nÃ©raux Basse Tension et Armoires Ã‰lectriques"
+                },
+
+                new()
+                {
+                    Nom = "Haute Tension",
+                    Description =
+                        "Postes de Transformation et Cellules MT/HT"
+                },
+
+                new()
+                {
+                    Nom = "Groupe Ã‰lectrogÃ¨ne",
+                    Description =
+                        "Groupes Ã‰lectrogÃ¨nes et Onduleurs de secours"
+                },
+
+                new()
+                {
+                    Nom = "Compresseur",
+                    Description =
+                        "Centrales d'air comprimÃ© et pompes industrielles"
+                },
+
+                new()
+                {
+                    Nom = "Automatisme",
+                    Description =
+                        "Automates programmables, TÃ©lÃ©gestion et RÃ©gulation"
+                },
+
+                new()
+                {
+                    Nom = "Ã‰lectricitÃ© industrielle",
+                    Description =
+                        "Installations et cÃ¢blages Ã©lectriques industriels"
+                },
+
+                new()
+                {
+                    Nom = "Informatique & RÃ©seau",
+                    Description =
+                        "Serveurs, Postes, Baies de brassage et Switchs"
+                }
+            };
+
+            await db.Specialites.AddRangeAsync(
+                specialites);
+
+            await db.SaveChangesAsync();
+
+            logger.LogInformation(
+                "Raven: default specialities created.");
+        }
+
+
+        //
+        // ----------------------------------------------------
+        // APPLICATION SETTINGS
+        // ----------------------------------------------------
+        //
+
+        if (!await db.ApplicationSettings.AnyAsync())
+        {
+            var settings =
+                new ApplicationSetting
+                {
+                    AgencesJson =
+                        System.Text.Json.JsonSerializer.Serialize(
+                            new[]
+                            {
+                                "Casablanca",
+                                "Rabat",
+                                "Tanger",
+                                "Safi",
+                                "Marrakech",
+                                "Agadir",
+                                "FÃ¨s"
+                            })
+                };
+
+            await db.ApplicationSettings.AddAsync(
+                settings);
+
+            await db.SaveChangesAsync();
+
+            logger.LogInformation(
+                "Raven: application settings created.");
+        }
+
+
+        //
+        // ----------------------------------------------------
+        // ADMINISTRATOR
+        // ----------------------------------------------------
+        //
+        // IMPORTANT:
+        //
+        // We DO NOT automatically create an admin with a
+        // hardcoded password.
+        //
+        // If you already have users, nothing happens.
+        //
+        // If the database is empty, configure:
+        //
+        // ADMIN_EMAIL
+        // ADMIN_DEFAULT_PASSWORD
+        //
+        // through environment variables.
+        //
+
+        if (!await db.Utilisateurs.AnyAsync())
+        {
+            var adminEmail =
+                Environment.GetEnvironmentVariable(
+                    "ADMIN_EMAIL");
+
+            var adminPassword =
+                Environment.GetEnvironmentVariable(
+                    "ADMIN_DEFAULT_PASSWORD");
+
+            if (!string.IsNullOrWhiteSpace(adminEmail) &&
+                !string.IsNullOrWhiteSpace(adminPassword))
+            {
+                var hasher =
+                    new Microsoft.AspNetCore.Identity
+                        .PasswordHasher<Utilisateur>();
+
+                var admin =
+                    new Utilisateur
+                    {
+                        Email = adminEmail
+                            .Trim()
+                            .ToLowerInvariant(),
+
+                        Role = "Responsable",
+
+                        TechnicienId = null,
+
+                        DateCreation =
+                            DateTime.UtcNow
+                    };
+
+                admin.PasswordHash =
+                    hasher.HashPassword(
+                        admin,
+                        adminPassword);
+
+                await db.Utilisateurs.AddAsync(
+                    admin);
+
+                await db.SaveChangesAsync();
+
+                logger.LogInformation(
+                    "Raven: initial Responsable account created.");
+            }
+            else
+            {
+                logger.LogWarning(
+                    """
+                    Raven: Utilisateurs table is empty.
+
+                    No administrator was created because
+                    ADMIN_EMAIL and ADMIN_DEFAULT_PASSWORD
+                    are not configured.
+
+                    This is intentional for security.
+                    """);
+            }
+        }
+
+
+        //
+        // ----------------------------------------------------
+        // DEMO DATA
+        // ----------------------------------------------------
+        //
+
+        await Raven.Services.DbSeeder
+            .SeedAsync(db);
+
+        logger.LogInformation(
+            "Raven: database initialization completed.");
     }
-
-    if (!dbContext.Utilisateurs.Any())
+    catch (Exception ex)
     {
-        var adminEmail =
-            builder.Configuration["Admin:Email"]
-            ?? Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+        logger.LogCritical(
+            ex,
+            """
+            Raven failed during database initialization.
 
-        var adminPassword =
-            builder.Configuration["Admin:DefaultPassword"]
-            ?? Environment.GetEnvironmentVariable("ADMIN_DEFAULT_PASSWORD");
+            Check:
 
-        if (string.IsNullOrWhiteSpace(adminEmail))
-        {
-            throw new InvalidOperationException(
-                "Admin:Email ou ADMIN_EMAIL est requis pour créer le compte administrateur initial.");
-        }
+            1. SQL Server is running.
+            2. Server name is correct.
+            3. Database exists or the account can create/use it.
+            4. SQL username/password are correct.
+            5. TCP port 1433 is accessible.
+            6. DB_CONNECTION_STRING is correct.
+            """);
 
-        if (string.IsNullOrWhiteSpace(adminPassword))
-        {
-            throw new InvalidOperationException(
-                "Admin:DefaultPassword ou ADMIN_DEFAULT_PASSWORD est requis pour créer le compte administrateur initial.");
-        }
-
-        var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<Utilisateur>();
-
-        var adminUser = new Utilisateur
-        {
-            Email = adminEmail.Trim(),
-            Role = "Responsable",
-            TechnicienId = null,
-            DateCreation = DateTime.UtcNow
-        };
-
-        adminUser.PasswordHash =
-            hasher.HashPassword(adminUser, adminPassword);
-
-        dbContext.Utilisateurs.Add(adminUser);
-        dbContext.SaveChanges();
+        throw;
     }
-
-    // Seed realistic Raven ERP demo data (Clients, Sites, Marches, Techniciens, Equipements, Visites) if empty
-    TechnoVIS.Services.DbSeeder.SeedAsync(dbContext).GetAwaiter().GetResult();
 }
 
 
-// HTTP Pipeline
+// ------------------------------------------------------------
+// HTTP PIPELINE
+// ------------------------------------------------------------
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseCors("DevCorsPolicy");
+    app.UseCors("DevelopmentCors");
+
     app.MapOpenApi();
 }
 
+
 app.UseDefaultFiles();
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -320,20 +597,73 @@ app.UseRouting();
 app.UseRateLimiter();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
 
 
-// Health Check
+// ------------------------------------------------------------
+// HEALTH CHECK
+// ------------------------------------------------------------
 
-app.MapGet("/health", () =>
-    Results.Ok(new
+app.MapGet(
+    "/health",
+    async (
+        AppDbContext db,
+        CancellationToken cancellationToken) =>
     {
-        status = "ok",
-        service = "Raven ERP Maintenance API",
-        time = DateTime.UtcNow
-    }));
+        var databaseAvailable =
+            await db.Database.CanConnectAsync(
+                cancellationToken);
 
+        if (!databaseAvailable)
+        {
+            return Results.Json(
+                new
+                {
+                    status = "degraded",
+                    service =
+                        "Raven Maintenance Management Platform",
+
+                    database = "unavailable",
+
+                    time = DateTime.UtcNow
+                },
+                statusCode:
+                    StatusCodes.Status503ServiceUnavailable);
+        }
+
+        return Results.Ok(
+            new
+            {
+                status = "ok",
+
+                service =
+                    "Raven Maintenance Management Platform",
+
+                database = "connected",
+
+                time = DateTime.UtcNow
+            });
+    });
+
+
+// ------------------------------------------------------------
+// RUN
+// ------------------------------------------------------------
 
 app.Run();
+
+
+// ------------------------------------------------------------
+// APPLICATION INFORMATION
+// ------------------------------------------------------------
+
+public sealed class ApplicationInfo
+{
+    public string Name { get; init; } = "Raven";
+
+    public string FullName { get; init; } =
+        "Raven Maintenance Management Platform";
+}

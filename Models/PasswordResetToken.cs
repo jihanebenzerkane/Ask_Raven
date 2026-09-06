@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class PasswordResetToken
     {
@@ -27,3 +27,4 @@ namespace TechnoVIS.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+

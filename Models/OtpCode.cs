@@ -1,12 +1,12 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     /// <summary>
     /// Stores one-time password (OTP) codes for MFA step-2 authentication.
-    /// The actual 6-digit code is never stored — only its SHA-256 hash.
+    /// The actual 6-digit code is never stored â€” only its SHA-256 hash.
     /// </summary>
     public class OtpCode
     {
@@ -40,3 +40,4 @@ namespace TechnoVIS.Models
         public DateTime? UsedAt { get; set; }
     }
 }
+

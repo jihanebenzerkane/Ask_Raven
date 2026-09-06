@@ -1,17 +1,17 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TechnoVIS.Data;
-using TechnoVIS.Models;
-using TechnoVIS.Services;
+using Raven.Data;
+using Raven.Models;
+using Raven.Services;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace TechnoVIS.Controllers
+namespace Raven.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -62,7 +62,7 @@ namespace TechnoVIS.Controllers
                 .Include(v => v.Marche)
                 .AsQueryable();
 
-            // Sécurité RBAC : un technicien ne peut STRICTEMENT voir que ses propres visites
+            // SÃ©curitÃ© RBAC : un technicien ne peut STRICTEMENT voir que ses propres visites
             if (isTechnicien)
             {
                 if (!currentTechId.HasValue)
@@ -91,11 +91,11 @@ namespace TechnoVIS.Controllers
             {
                 if (string.Equals(statut, "En retard", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(v => v.Statut == "En retard" || (v.Statut == "Planifiée" && v.DatePrevue < today));
+                    query = query.Where(v => v.Statut == "En retard" || (v.Statut == "PlanifiÃ©e" && v.DatePrevue < today));
                 }
-                else if (string.Equals(statut, "Planifiée", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(statut, "PlanifiÃ©e", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = query.Where(v => v.Statut == "Planifiée" && v.DatePrevue >= today);
+                    query = query.Where(v => v.Statut == "PlanifiÃ©e" && v.DatePrevue >= today);
                 }
                 else
                 {
@@ -118,7 +118,7 @@ namespace TechnoVIS.Controllers
                 query = query.Where(v => v.DatePrevue <= dateFin.Value);
             }
 
-            // Pagination optionnelle si demandée
+            // Pagination optionnelle si demandÃ©e
             if (page.HasValue && page.Value > 0 && pageSize.HasValue && pageSize.Value > 0)
             {
                 query = query.Skip((page.Value - 1) * pageSize.Value).Take(pageSize.Value);
@@ -141,7 +141,7 @@ namespace TechnoVIS.Controllers
                     SiteNom = v.Equipement != null && v.Equipement.Site != null ? v.Equipement.Site.NomSite : "",
                     ClientNom = v.Equipement != null && v.Equipement.Site != null && v.Equipement.Site.Client != null ? v.Equipement.Site.Client.NomSociete : "",
                     v.TechnicienId,
-                    TechnicienNom = v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}".Trim() : "Non assigné",
+                    TechnicienNom = v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}".Trim() : "Non assignÃ©",
                     TechnicienMatricule = v.Technicien != null ? v.Technicien.Matricule : "",
                     v.MarcheId,
                     MarcheCode = v.Marche != null ? v.Marche.CodeMarche : "",
@@ -149,7 +149,7 @@ namespace TechnoVIS.Controllers
                     v.DateRealisee,
                     v.DureeEstimeeMinutes,
                     v.DureeReelleMinutes,
-                    Statut = (v.Statut == "Planifiée" && v.DatePrevue < today) ? "En retard" : v.Statut,
+                    Statut = (v.Statut == "PlanifiÃ©e" && v.DatePrevue < today) ? "En retard" : v.Statut,
                     v.ScorePriorite,
                     v.RapportTechnique,
                     v.ActionsCorrectives
@@ -201,14 +201,14 @@ namespace TechnoVIS.Controllers
                     SiteNom = v.Equipement != null && v.Equipement.Site != null ? v.Equipement.Site.NomSite : "",
                     ClientNom = v.Equipement != null && v.Equipement.Site != null && v.Equipement.Site.Client != null ? v.Equipement.Site.Client.NomSociete : "",
                     v.TechnicienId,
-                    TechnicienNom = v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}".Trim() : "Non assigné",
+                    TechnicienNom = v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}".Trim() : "Non assignÃ©",
                     v.MarcheId,
                     MarcheCode = v.Marche != null ? v.Marche.CodeMarche : "",
                     v.DatePrevue,
                     v.DateRealisee,
                     v.DureeEstimeeMinutes,
                     v.DureeReelleMinutes,
-                    Statut = (v.Statut == "Planifiée" && v.DatePrevue < today) ? "En retard" : v.Statut,
+                    Statut = (v.Statut == "PlanifiÃ©e" && v.DatePrevue < today) ? "En retard" : v.Statut,
                     v.ScorePriorite,
                     v.RapportTechnique,
                     v.ActionsCorrectives
@@ -229,9 +229,9 @@ namespace TechnoVIS.Controllers
                 .Include(v => v.Marche)
                 .FirstOrDefaultAsync(v => v.Id == id);
 
-            if (visite == null) return NotFound(new { message = "Visite non trouvée." });
+            if (visite == null) return NotFound(new { message = "Visite non trouvÃ©e." });
 
-            // Sécurité RBAC : un technicien ne peut pas consulter la visite d'un collègue
+            // SÃ©curitÃ© RBAC : un technicien ne peut pas consulter la visite d'un collÃ¨gue
             if (User.IsInRole("Technicien"))
             {
                 var currentTechId = GetCurrentTechnicienId();
@@ -248,14 +248,14 @@ namespace TechnoVIS.Controllers
         [Authorize(Roles = "Responsable")]
         public async Task<IActionResult> CreateVisite([FromBody] Visite model)
         {
-            if (model == null) return BadRequest(new { message = "Données invalides." });
+            if (model == null) return BadRequest(new { message = "DonnÃ©es invalides." });
 
-            // Validation règle métier : si TypeVisite == "Autre", TypeVisiteAutre est obligatoire
+            // Validation rÃ¨gle mÃ©tier : si TypeVisite == "Autre", TypeVisiteAutre est obligatoire
             if (string.Equals(model.TypeVisite, "Autre", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.IsNullOrWhiteSpace(model.TypeVisiteAutre))
                 {
-                    return BadRequest(new { message = "Le champ 'Précisez le type de visite' est obligatoire lorsque le type 'Autre' est sélectionné." });
+                    return BadRequest(new { message = "Le champ 'PrÃ©cisez le type de visite' est obligatoire lorsque le type 'Autre' est sÃ©lectionnÃ©." });
                 }
             }
 
@@ -294,7 +294,7 @@ namespace TechnoVIS.Controllers
             }
             catch (DbUpdateException)
             {
-                // En cas de collision concurrente immédiate, regénérer un numéro supérieur unique
+                // En cas de collision concurrente immÃ©diate, regÃ©nÃ©rer un numÃ©ro supÃ©rieur unique
                 var uniqueSuffix = Guid.NewGuid().ToString("N")[..4].ToUpper();
                 model.Reference = $"VIS-{DateTime.Now.Year}-{uniqueSuffix}";
                 await _context.SaveChangesAsync();
@@ -309,7 +309,7 @@ namespace TechnoVIS.Controllers
             var visite = await _context.Visites.FindAsync(id);
             if (visite == null) return NotFound();
 
-            // Sécurité RBAC : vérification de l'assignation du technicien
+            // SÃ©curitÃ© RBAC : vÃ©rification de l'assignation du technicien
             if (User.IsInRole("Technicien"))
             {
                 var currentTechId = GetCurrentTechnicienId();
@@ -333,7 +333,7 @@ namespace TechnoVIS.Controllers
                 visite.DureeReelleMinutes = update.DureeReelleMinutes.Value;
             }
 
-            if (update.Statut == "Validée")
+            if (update.Statut == "ValidÃ©e")
             {
                 var dateRealisee = DateTime.Now;
                 visite.DateRealisee = dateRealisee;
@@ -356,7 +356,7 @@ namespace TechnoVIS.Controllers
                         int intervalleJours = 365 / activeMarche.VisitesAnnuellesPrevues;
                         equipement.ProchaineVisitePrevue = dateRealisee.AddDays(intervalleJours);
                         activeMarche.VisitesRealisees += 1;
-                        _logger.LogInformation("Prochaine visite pour l'équipement {EquipementId} recalculée au {ProchaineDate}.",
+                        _logger.LogInformation("Prochaine visite pour l'Ã©quipement {EquipementId} recalculÃ©e au {ProchaineDate}.",
                             equipement.Id, equipement.ProchaineVisitePrevue);
                     }
                 }
@@ -367,7 +367,7 @@ namespace TechnoVIS.Controllers
         }
 
         /// <summary>
-        /// Moteur de recommandation dynamique de techniciens pour un équipement donné (Réservé Responsable)
+        /// Moteur de recommandation dynamique de techniciens pour un Ã©quipement donnÃ© (RÃ©servÃ© Responsable)
         /// </summary>
         [HttpGet("recommandations-techniciens")]
         [Authorize(Roles = "Responsable")]
@@ -382,7 +382,7 @@ namespace TechnoVIS.Controllers
 
             if (equipement == null)
             {
-                return NotFound(new { message = "Équipement non trouvé." });
+                return NotFound(new { message = "Ã‰quipement non trouvÃ©." });
             }
 
             var targetDate = datePrevue ?? DateTime.Now;
@@ -399,7 +399,7 @@ namespace TechnoVIS.Controllers
 
             var scoredList = techniciens.Select(t =>
             {
-                var visitesSemaine = t.Visites.Where(v => v.DatePrevue >= startOfWeek && v.DatePrevue < endOfWeek && (v.Statut == "Planifiée" || v.Statut == "En cours")).ToList();
+                var visitesSemaine = t.Visites.Where(v => v.DatePrevue >= startOfWeek && v.DatePrevue < endOfWeek && (v.Statut == "PlanifiÃ©e" || v.Statut == "En cours")).ToList();
                 int heuresPlanifieesSemaine = (int)Math.Ceiling(visitesSemaine.Sum(v => v.DureeEstimeeMinutes) / 60.0);
 
                 var evaluation = _scoringService.EvaluerTechnicien(t, equipement, targetDate, dureeMinutes, heuresPlanifieesSemaine);
@@ -436,7 +436,7 @@ namespace TechnoVIS.Controllers
             return Ok(scoredList);
         }
 
-        // ── EXPORTS (Réservé Responsable) ─────────────────────────────────────────
+        // â”€â”€ EXPORTS (RÃ©servÃ© Responsable) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         [HttpGet("export")]
         [Authorize(Roles = "Responsable")]
@@ -457,14 +457,14 @@ namespace TechnoVIS.Controllers
 
             var visites = await query.OrderBy(v => v.DatePrevue).ToListAsync();
 
-            var headers = new string[] { "Référence", "Type", "Équipement", "Client / Site", "Technicien", "Date Prévue", "Statut" };
+            var headers = new string[] { "RÃ©fÃ©rence", "Type", "Ã‰quipement", "Client / Site", "Technicien", "Date PrÃ©vue", "Statut" };
             var data = visites.Select(v => new string[]
             {
                 v.Reference,
                 v.TypeVisite == "Autre" && !string.IsNullOrWhiteSpace(v.TypeVisiteAutre) ? $"Autre ({v.TypeVisiteAutre})" : v.TypeVisite,
                 v.Equipement?.Nom ?? "",
                 $"{v.Equipement?.Site?.Client?.NomSociete} / {v.Equipement?.Site?.NomSite}",
-                v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}" : "Non assigné",
+                v.Technicien != null ? $"{v.Technicien.Prenom} {v.Technicien.Nom}" : "Non assignÃ©",
                 v.DatePrevue.ToString("dd/MM/yyyy"),
                 v.Statut
             }).ToArray();
@@ -512,7 +512,7 @@ namespace TechnoVIS.Controllers
 
             if (visite == null) return NotFound(new { message = "Visite introuvable." });
 
-            // Sécurité RBAC : si technicien, vérifier l'assignation
+            // SÃ©curitÃ© RBAC : si technicien, vÃ©rifier l'assignation
             if (User.IsInRole("Technicien"))
             {
                 var currentTechId = GetCurrentTechnicienId();
@@ -522,7 +522,7 @@ namespace TechnoVIS.Controllers
                 }
             }
 
-            if (visite.Statut != "Validée") return BadRequest(new { message = "Le PV ne peut être généré que pour une visite validée." });
+            if (visite.Statut != "ValidÃ©e") return BadRequest(new { message = "Le PV ne peut Ãªtre gÃ©nÃ©rÃ© que pour une visite validÃ©e." });
 
             var pdfBytes = pdfService.GeneratePvPdf(visite);
             return File(pdfBytes, "application/pdf", $"PV_{visite.Reference}.pdf");
@@ -537,3 +537,4 @@ namespace TechnoVIS.Controllers
         public int? DureeReelleMinutes { get; set; }
     }
 }
+

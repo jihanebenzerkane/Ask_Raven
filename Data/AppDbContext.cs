@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using TechnoVIS.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Raven.Models;
 
-namespace TechnoVIS.Data;
+namespace Raven.Data;
 
 public class AppDbContext : DbContext
 {

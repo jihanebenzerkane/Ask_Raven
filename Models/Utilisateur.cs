@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class Utilisateur
     {
@@ -26,3 +26,4 @@ namespace TechnoVIS.Models
         public DateTime DateCreation { get; set; } = DateTime.UtcNow;
     }
 }
+

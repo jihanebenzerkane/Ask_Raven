@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace TechnoVIS.Models
+namespace Raven.Models
 {
     public class Technicien
     {
@@ -13,12 +13,12 @@ namespace TechnoVIS.Models
         public string Telephone { get; set; } = string.Empty;
 
         public DateTime DateEmbauche { get; set; } = DateTime.UtcNow;
-        public string Statut { get; set; } = "Actif"; // Actif, En congé, Indisponible, Inactif
+        public string Statut { get; set; } = "Actif"; // Actif, En congÃ©, Indisponible, Inactif
         public string Base { get; set; } = "Casablanca"; // Agence ECS principale (Casablanca, Rabat, Tanger, etc.)
 
         public int HeuresHebdo { get; set; } = 40; // Contrat hebdomadaire en heures
-        public int HeuresTravaillees { get; set; } = 0; // Total ou cumul heures réalisées
-        public int HeuresPlanifiees { get; set; } = 0; // Heures actuellement planifiées
+        public int HeuresTravaillees { get; set; } = 0; // Total ou cumul heures rÃ©alisÃ©es
+        public int HeuresPlanifiees { get; set; } = 0; // Heures actuellement planifiÃ©es
 
         public bool Disponible { get; set; } = true;
 
@@ -26,3 +26,4 @@ namespace TechnoVIS.Models
         public List<Visite> Visites { get; set; } = new();
     }
 }
+
