@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -28,9 +28,9 @@ namespace Raven.Services
 
             var techName = visite.Technicien != null
                 ? $"{visite.Technicien.Prenom} {visite.Technicien.Nom}".Trim()
-                : "Non assignÃ©";
-            var techMatricule = visite.Technicien?.Matricule ?? "â€”";
-            var techBase = visite.Technicien?.Base ?? "â€”";
+                : "Non assigné";
+            var techMatricule = visite.Technicien?.Matricule ?? "—";
+            var techBase = visite.Technicien?.Base ?? "—";
 
             var clientName = visite.Equipement?.Site?.Client?.NomSociete ?? "Client N/A";
             var clientCode = visite.Equipement?.Site?.Client?.CodeClient ?? "";
@@ -38,9 +38,9 @@ namespace Raven.Services
             var siteVille = visite.Equipement?.Site?.Ville ?? "";
             var siteAdresse = visite.Equipement?.Site?.Adresse ?? "";
 
-            var eqNom = visite.Equipement?.Nom ?? "Ã‰quipement N/A";
+            var eqNom = visite.Equipement?.Nom ?? "Équipement N/A";
             var eqSerial = visite.Equipement?.SerialNumber ?? "N/A";
-            var eqCat = visite.Equipement?.Categorie ?? "GÃ©nÃ©ral";
+            var eqCat = visite.Equipement?.Categorie ?? "Général";
             var eqCriticite = visite.Equipement?.Criticite ?? 3;
 
             var typeAffiche = visite.TypeVisite;
@@ -75,14 +75,14 @@ namespace Raven.Services
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("Raven").FontSize(22).Bold().FontColor(primaryColor);
-                                c.Item().Text("Plateforme de Maintenance Industrielle & Gestion d'Ã‰quipements").FontSize(8.5f).FontColor(textMuted);
+                                c.Item().Text("Plateforme de Maintenance Industrielle & Gestion d'Équipements").FontSize(8.5f).FontColor(textMuted);
                             });
 
                             row.ConstantItem(220).AlignRight().Column(c =>
                             {
                                 c.Item().Background(primaryColor).PaddingVertical(4).PaddingHorizontal(8).Text("PROCES-VERBAL D'INTERVENTION").FontSize(10).Bold().FontColor(Colors.White).AlignCenter();
-                                c.Item().PaddingTop(2).Text($"RÃ©f : {visite.Reference}").FontSize(9).Bold().FontColor(textDark).AlignRight();
-                                c.Item().Text($"Ã‰ditÃ© le : {dateEditionStr}").FontSize(7.5f).FontColor(textMuted).AlignRight();
+                                c.Item().PaddingTop(2).Text($"Réf : {visite.Reference}").FontSize(9).Bold().FontColor(textDark).AlignRight();
+                                c.Item().Text($"Édité le : {dateEditionStr}").FontSize(7.5f).FontColor(textMuted).AlignRight();
                             });
                         });
 
@@ -94,7 +94,7 @@ namespace Raven.Services
                     {
                         col.Spacing(12);
 
-                        // Statut & SynthÃ¨se Strip
+                        // Statut & Synthèse Strip
                         col.Item().Background(bgLight).Border(1).BorderColor(borderLight).Padding(8).Row(row =>
                         {
                             row.RelativeItem().Column(c =>
@@ -106,23 +106,23 @@ namespace Raven.Services
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("STATUT").FontSize(7.5f).Bold().FontColor(textMuted);
-                                c.Item().Text("VALIDÃ‰E & TERMINÃ‰E").FontSize(10).Bold().FontColor(Colors.Green.Darken2);
+                                c.Item().Text("VALIDÉE & TERMINÉE").FontSize(10).Bold().FontColor(Colors.Green.Darken2);
                             });
 
                             row.RelativeItem().Column(c =>
                             {
-                                c.Item().Text("DATE RÃ‰ALISATION").FontSize(7.5f).Bold().FontColor(textMuted);
+                                c.Item().Text("DATE RÉALISATION").FontSize(7.5f).Bold().FontColor(textMuted);
                                 c.Item().Text(dateRealiseeStr).FontSize(9.5f).SemiBold();
                             });
 
                             row.RelativeItem().Column(c =>
                             {
-                                c.Item().Text("DURÃ‰E EFFECTIVE").FontSize(7.5f).Bold().FontColor(textMuted);
+                                c.Item().Text("DURÉE EFFECTIVE").FontSize(7.5f).Bold().FontColor(textMuted);
                                 c.Item().Text(dureeReelle).FontSize(9.5f).Bold().FontColor(primaryDark);
                             });
                         });
 
-                        // Grille 2 colonnes : Client/Site & Ã‰quipement
+                        // Grille 2 colonnes : Client/Site & Équipement
                         col.Item().Row(row =>
                         {
                             // Colonne Gauche : Client & Site
@@ -134,7 +134,7 @@ namespace Raven.Services
                                     inner.Spacing(4);
                                     inner.Item().Text(t => { t.Span("Client : ").Bold(); t.Span(clientName); if (!string.IsNullOrEmpty(clientCode)) t.Span($" ({clientCode})").FontColor(textMuted); });
                                     inner.Item().Text(t => { t.Span("Site : ").Bold(); t.Span(siteName); });
-                                    inner.Item().Text(t => { t.Span("Ville : ").Bold(); t.Span(string.IsNullOrEmpty(siteVille) ? "Non renseignÃ©e" : siteVille); });
+                                    inner.Item().Text(t => { t.Span("Ville : ").Bold(); t.Span(string.IsNullOrEmpty(siteVille) ? "Non renseignée" : siteVille); });
                                     if (!string.IsNullOrEmpty(siteAdresse))
                                         inner.Item().Text(t => { t.Span("Adresse : ").Bold(); t.Span(siteAdresse).FontColor(textMuted); });
                                 });
@@ -142,16 +142,16 @@ namespace Raven.Services
 
                             row.ConstantItem(12); // Espace
 
-                            // Colonne Droite : Ã‰quipement & Intervenant
+                            // Colonne Droite : Équipement & Intervenant
                             row.RelativeItem().Border(1).BorderColor(borderLight).Column(c =>
                             {
-                                c.Item().Background(bgLight).Padding(6).Text("âš™ï¸ Ã‰QUIPEMENT & TECHNICIEN").FontSize(9).Bold().FontColor(primaryDark);
+                                c.Item().Background(bgLight).Padding(6).Text("âš™ï¸ ÉQUIPEMENT & TECHNICIEN").FontSize(9).Bold().FontColor(primaryDark);
                                 c.Item().Padding(8).Column(inner =>
                                 {
                                     inner.Spacing(4);
-                                    inner.Item().Text(t => { t.Span("Ã‰quipement : ").Bold(); t.Span(eqNom); });
-                                    inner.Item().Text(t => { t.Span("NÂ° SÃ©rie : ").Bold(); t.Span(eqSerial).FontColor(primaryDark); });
-                                    inner.Item().Text(t => { t.Span("CatÃ©gorie : ").Bold(); t.Span(eqCat); t.Span($" | CriticitÃ© : {eqCriticite}/5").FontColor(textMuted); });
+                                    inner.Item().Text(t => { t.Span("Équipement : ").Bold(); t.Span(eqNom); });
+                                    inner.Item().Text(t => { t.Span("NÂ° Série : ").Bold(); t.Span(eqSerial).FontColor(primaryDark); });
+                                    inner.Item().Text(t => { t.Span("Catégorie : ").Bold(); t.Span(eqCat); t.Span($" | Criticité : {eqCriticite}/5").FontColor(textMuted); });
                                     inner.Item().Text(t => { t.Span("Technicien : ").Bold(); t.Span(techName); t.Span($" ({techMatricule} - {techBase})").FontColor(textMuted); });
                                 });
                             });
@@ -163,18 +163,18 @@ namespace Raven.Services
                             c.Item().Background(bgLight).Padding(6).Text("ðŸ“‹ RAPPORT TECHNIQUE & CONSTATS D'INSPECTION").FontSize(9).Bold().FontColor(primaryDark);
                             c.Item().Padding(10).MinHeight(60).Text(
                                 string.IsNullOrWhiteSpace(visite.RapportTechnique)
-                                    ? "Inspection et points de contrÃ´le rÃ©alisÃ©s conformÃ©ment aux procÃ©dures standards de maintenance. Aucun dysfonctionnement majeur constatÃ©."
+                                    ? "Inspection et points de contrôle réalisés conformément aux procédures standards de maintenance. Aucun dysfonctionnement majeur constaté."
                                     : visite.RapportTechnique
                             ).FontSize(9).LineHeight(1.3f);
                         });
 
-                        // Actions Correctives & PiÃ¨ces
+                        // Actions Correctives & Pièces
                         col.Item().Border(1).BorderColor(borderLight).Column(c =>
                         {
-                            c.Item().Background(bgLight).Padding(6).Text("ðŸ”§ ACTIONS CORRECTIVES & PIÃˆCES REMPLACÃ‰ES").FontSize(9).Bold().FontColor(primaryDark);
+                            c.Item().Background(bgLight).Padding(6).Text("ðŸ”§ ACTIONS CORRECTIVES & PIÃˆCES REMPLACÉES").FontSize(9).Bold().FontColor(primaryDark);
                             c.Item().Padding(10).MinHeight(45).Text(
                                 string.IsNullOrWhiteSpace(visite.ActionsCorrectives)
-                                    ? "ContrÃ´les pÃ©riodiques et serrages effectuÃ©s. Nettoyage et vÃ©rification des paramÃ¨tres nominaux. Ã‰quipement opÃ©rationnel."
+                                    ? "Contrôles périodiques et serrages effectués. Nettoyage et vérification des paramètres nominaux. Équipement opérationnel."
                                     : visite.ActionsCorrectives
                             ).FontSize(9).LineHeight(1.3f);
                         });
@@ -187,9 +187,9 @@ namespace Raven.Services
                             {
                                 r.RelativeItem().Column(sig =>
                                 {
-                                    sig.Item().Text("Pour le Client / RÃ©ceptionnaire :").Bold().FontSize(8.5f);
-                                    sig.Item().Text("Nom & PrÃ©nom : ____________________").FontSize(8).FontColor(textMuted);
-                                    sig.Item().Text("Mention Â« Bon pour rÃ©ception des travaux Â»").FontSize(7.5f).Italic().FontColor(textMuted);
+                                    sig.Item().Text("Pour le Client / Réceptionnaire :").Bold().FontSize(8.5f);
+                                    sig.Item().Text("Nom & Prénom : ____________________").FontSize(8).FontColor(textMuted);
+                                    sig.Item().Text("Mention Â« Bon pour réception des travaux Â»").FontSize(7.5f).Italic().FontColor(textMuted);
                                     sig.Item().PaddingTop(25).Text("Cachet & Signature").FontSize(8).FontColor(textMuted).AlignCenter();
                                 });
 
@@ -212,7 +212,7 @@ namespace Raven.Services
                         col.Item().LineHorizontal(0.5f).LineColor(borderLight);
                         col.Item().PaddingTop(4).Row(row =>
                         {
-                            row.RelativeItem().Text("Raven â€” Document officiel de maintenance industrielle").FontSize(7.5f).FontColor(textMuted);
+                            row.RelativeItem().Text("Raven — Document officiel de maintenance industrielle").FontSize(7.5f).FontColor(textMuted);
                             row.ConstantItem(120).AlignRight().Text(t =>
                             {
                                 t.DefaultTextStyle(x => x.FontSize(7.5f).FontColor(textMuted));
@@ -254,7 +254,7 @@ namespace Raven.Services
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text(title).FontSize(18).Bold().FontColor(primaryColor);
-                                c.Item().Text($"Rapport exportÃ© le {DateTime.Now:dd/MM/yyyy Ã  HH:mm} â€” Total : {data.Length} ligne(s)").FontSize(8).FontColor(textMuted);
+                                c.Item().Text($"Rapport exporté le {DateTime.Now:dd/MM/yyyy Ã  HH:mm} — Total : {data.Length} ligne(s)").FontSize(8).FontColor(textMuted);
                             });
 
                             row.ConstantItem(120).AlignRight().Column(c =>
@@ -292,7 +292,7 @@ namespace Raven.Services
                             var currentBg = r % 2 == 0 ? Colors.White : Colors.Grey.Lighten4;
                             foreach (var cell in row)
                             {
-                                table.Cell().Background(currentBg).BorderBottom(0.5f).BorderColor(borderLight).Padding(4).Text(cell ?? "â€”").FontSize(8);
+                                table.Cell().Background(currentBg).BorderBottom(0.5f).BorderColor(borderLight).Padding(4).Text(cell ?? "—").FontSize(8);
                             }
                         }
                     });
@@ -303,7 +303,7 @@ namespace Raven.Services
                         col.Item().LineHorizontal(0.5f).LineColor(borderLight);
                         col.Item().PaddingTop(4).Row(row =>
                         {
-                            row.RelativeItem().Text("Raven â€” SystÃ¨me de Planification & Maintenance Industrielle").FontSize(7.5f).FontColor(textMuted);
+                            row.RelativeItem().Text("Raven — Système de Planification & Maintenance Industrielle").FontSize(7.5f).FontColor(textMuted);
                             row.ConstantItem(100).AlignRight().Text(t =>
                             {
                                 t.DefaultTextStyle(x => x.FontSize(7.5f).FontColor(textMuted));

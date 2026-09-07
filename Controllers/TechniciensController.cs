@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -60,10 +60,10 @@ namespace Raven.Controllers
             var result = techniciens.Select(t =>
             {
                 var visitesCetteSemaine = t.Visites.Where(v => v.DatePrevue >= startOfWeek && v.DatePrevue < endOfWeek).ToList();
-                int heuresPlanifiees = (int)Math.Ceiling(visitesCetteSemaine.Where(v => v.Statut == "PlanifiÃ©e" || v.Statut == "En cours").Sum(v => v.DureeEstimeeMinutes) / 60.0);
-                int heuresRealisees = (int)Math.Ceiling(t.Visites.Where(v => v.Statut == "ValidÃ©e").Sum(v => (v.DureeReelleMinutes ?? v.DureeEstimeeMinutes)) / 60.0);
+                int heuresPlanifiees = (int)Math.Ceiling(visitesCetteSemaine.Where(v => v.Statut == "Planifiée" || v.Statut == "En cours").Sum(v => v.DureeEstimeeMinutes) / 60.0);
+                int heuresRealisees = (int)Math.Ceiling(t.Visites.Where(v => v.Statut == "Validée").Sum(v => (v.DureeReelleMinutes ?? v.DureeEstimeeMinutes)) / 60.0);
 
-                var visitesValidees = t.Visites.Where(v => v.Statut == "ValidÃ©e").ToList();
+                var visitesValidees = t.Visites.Where(v => v.Statut == "Validée").ToList();
                 double dureeMoyenne = visitesValidees.Count > 0 
                     ? Math.Round(visitesValidees.Average(v => v.DureeReelleMinutes ?? v.DureeEstimeeMinutes), 0)
                     : 120;
@@ -86,7 +86,7 @@ namespace Raven.Controllers
                     t.Disponible,
                     Specialites = t.Specialites.Select(s => new { s.Id, s.Nom }).ToList(),
                     TotalVisites = t.Visites.Count,
-                    VisitesActives = t.Visites.Count(v => v.Statut == "PlanifiÃ©e" || v.Statut == "En cours"),
+                    VisitesActives = t.Visites.Count(v => v.Statut == "Planifiée" || v.Statut == "En cours"),
                     DureeMoyenneVisiteMinutes = dureeMoyenne
                 };
             }).ToList();
@@ -105,7 +105,7 @@ namespace Raven.Controllers
 
             if (t == null)
             {
-                return NotFound(new { message = "Technicien non trouvÃ©." });
+                return NotFound(new { message = "Technicien non trouvé." });
             }
 
             return Ok(new
@@ -139,7 +139,7 @@ namespace Raven.Controllers
 
             if (await _context.Techniciens.AnyAsync(t => t.Matricule == dto.Matricule))
             {
-                return BadRequest(new { message = "Un technicien avec ce matricule existe dÃ©jÃ ." });
+                return BadRequest(new { message = "Un technicien avec ce matricule existe déjÃ ." });
             }
 
             var tech = new Technicien
@@ -165,7 +165,7 @@ namespace Raven.Controllers
             _context.Techniciens.Add(tech);
             await _context.SaveChangesAsync();
 
-            // CrÃ©er le compte utilisateur pour le technicien s'il a un email
+            // Créer le compte utilisateur pour le technicien s'il a un email
             await EnsureTechnicienUserAccountAsync(tech);
 
             return CreatedAtAction(nameof(GetTechnicien), new { id = tech.Id }, tech);
@@ -218,7 +218,7 @@ namespace Raven.Controllers
             _context.Techniciens.Remove(tech);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Technicien supprimÃ©." });
+            return Ok(new { message = "Technicien supprimé." });
         }
 
         // GET: api/Techniciens/specialites
@@ -238,7 +238,7 @@ namespace Raven.Controllers
                 return BadRequest(new { error = "Fichier Excel requis (.xlsx)." });
 
             if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-                return BadRequest(new { error = "Format non supportÃ© : seul le format Excel (.xlsx) est acceptÃ©." });
+                return BadRequest(new { error = "Format non supporté : seul le format Excel (.xlsx) est accepté." });
 
             try
             {
@@ -265,7 +265,7 @@ namespace Raven.Controllers
         public async Task<IActionResult> ConfirmTechniciensImport([FromBody] List<TechnicienImportRow> rows)
         {
             if (rows == null || !rows.Any())
-                return BadRequest(new { error = "Aucune donnÃ©e Ã  importer." });
+                return BadRequest(new { error = "Aucune donnée Ã  importer." });
 
             var strategy = _context.Database.CreateExecutionStrategy();
 
@@ -338,7 +338,7 @@ namespace Raven.Controllers
                                 }
                                 else
                                 {
-                                    var newSpec = new Specialite { Nom = name.Trim(), Description = "AjoutÃ© via import Excel" };
+                                    var newSpec = new Specialite { Nom = name.Trim(), Description = "Ajouté via import Excel" };
                                     _context.Specialites.Add(newSpec);
                                     await _context.SaveChangesAsync();
                                     specMap[clean] = newSpec;
@@ -349,7 +349,7 @@ namespace Raven.Controllers
 
                         await _context.SaveChangesAsync();
 
-                        // CrÃ©ation / synchronisation du compte utilisateur
+                        // Création / synchronisation du compte utilisateur
                         await EnsureTechnicienUserAccountAsync(tech);
                     }
 
@@ -357,7 +357,7 @@ namespace Raven.Controllers
 
                     return Ok(new
                     {
-                        message = $"Importation rÃ©ussie : {imported} technicien(s) crÃ©Ã©(s), {updated} mis Ã  jour.",
+                        message = $"Importation réussie : {imported} technicien(s) créé(s), {updated} mis Ã  jour.",
                         imported,
                         updated
                     });
@@ -365,7 +365,7 @@ namespace Raven.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return StatusCode(500, new { error = $"Ã‰chec de l'import des techniciens : {ex.Message}" });
+                    return StatusCode(500, new { error = $"Échec de l'import des techniciens : {ex.Message}" });
                 }
             });
         }
@@ -392,7 +392,7 @@ namespace Raven.Controllers
 
                 if (string.IsNullOrWhiteSpace(defaultPassword))
                 {
-                    // Aucun mot de passe par dÃ©faut n'est configurÃ© : le compte sera crÃ©Ã© manuellement via l'interface d'administration
+                    // Aucun mot de passe par défaut n'est configuré : le compte sera créé manuellement via l'interface d'administration
                     return;
                 }
 

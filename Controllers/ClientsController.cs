@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -70,7 +70,7 @@ namespace Raven.Controllers
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.NomSociete))
             {
-                return BadRequest(new { message = "Le nom de la sociÃ©tÃ© est obligatoire." });
+                return BadRequest(new { message = "Le nom de la société est obligatoire." });
             }
 
             var codeClient = string.IsNullOrWhiteSpace(dto.CodeClient)
@@ -79,7 +79,7 @@ namespace Raven.Controllers
 
             if (await _context.Clients.AnyAsync(c => c.CodeClient == codeClient))
             {
-                return BadRequest(new { message = "Un client avec ce code existe dÃ©jÃ ." });
+                return BadRequest(new { message = "Un client avec ce code existe déjÃ ." });
             }
 
             var client = new Client
@@ -130,7 +130,7 @@ namespace Raven.Controllers
                 return NotFound(new { message = "Client introuvable." });
             }
 
-            // Protection des dÃ©pendances
+            // Protection des dépendances
             int nbSites = client.Sites?.Count ?? 0;
             int nbMarches = client.Marches?.Count ?? 0;
 
@@ -138,14 +138,14 @@ namespace Raven.Controllers
             {
                 return BadRequest(new
                 {
-                    message = $"Impossible de supprimer le client '{client.NomSociete}' car il possÃ¨de {nbSites} site(s) et {nbMarches} marchÃ©(s) associÃ©(s). Veuillez d'abord supprimer ou rÃ©assigner ces Ã©lÃ©ments."
+                    message = $"Impossible de supprimer le client '{client.NomSociete}' car il possède {nbSites} site(s) et {nbMarches} marché(s) associé(s). Veuillez d'abord supprimer ou réassigner ces éléments."
                 });
             }
 
             _context.Clients.Remove(client);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Client supprimÃ© avec succÃ¨s." });
+            return Ok(new { message = "Client supprimé avec succès." });
         }
     }
 }

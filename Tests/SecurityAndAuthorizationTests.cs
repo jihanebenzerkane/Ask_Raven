@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -12,7 +12,7 @@ namespace Raven.Tests
         [Fact]
         public void DashboardController_EstProtegeParRoleResponsable()
         {
-            // VÃ©rifie que le contrÃ´leur Dashboard complet exige le rÃ´le Responsable
+            // Vérifie que le contrôleur Dashboard complet exige le rôle Responsable
             var authAttr = typeof(DashboardController).GetCustomAttribute<AuthorizeAttribute>();
             Assert.NotNull(authAttr);
             Assert.Equal("Responsable", authAttr.Roles);
@@ -24,11 +24,11 @@ namespace Raven.Tests
             var method = typeof(DashboardController).GetMethod(nameof(DashboardController.ResetData));
             Assert.NotNull(method);
 
-            // VÃ©rifie qu'il n'y a pas d'Ã©chappement anonyme [AllowAnonymous]
+            // Vérifie qu'il n'y a pas d'échappement anonyme [AllowAnonymous]
             var allowAnon = method.GetCustomAttribute<AllowAnonymousAttribute>();
             Assert.Null(allowAnon);
 
-            // VÃ©rifie que la classe exige bien le rÃ´le Responsable
+            // Vérifie que la classe exige bien le rôle Responsable
             var classAuth = typeof(DashboardController).GetCustomAttribute<AuthorizeAttribute>();
             Assert.NotNull(classAuth);
             Assert.Contains("Responsable", classAuth.Roles);

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TechnoVIS -- Design System ("Blueprint")
+   Raven -- Design System ("Blueprint & NetSuite Steel")
    Generous whitespace, confident typography, intentional hierarchy.
    Accent is blueprint blue -- the color of engineering schematics --
    used sparingly. Plex Mono carries technical/numeric data (serials,
@@ -2577,169 +2577,399 @@ textarea:focus {
   filter: brightness(1.1);
   transform: scale(1.05);
 }
-
 /* ==========================================================================
-   Modern Contemporary AI Copilot "Ask Raven" Styling
+   Command & Search Palette ("Ask Raven" NetSuite Dark Steel Edition)
    ========================================================================== */
 
-.ask-raven-modal-box {
+.command-palette-modal-box {
+  background: #0f172a !important;
+  color: #f8fafc !important;
   border-radius: 12px !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+  padding: 0 !important;
   overflow: hidden !important;
 }
 
-.ask-raven-header {
-  background: linear-gradient(135deg, #090e17 0%, #0f1d33 100%) !important;
-  border-bottom: 1px solid rgba(56, 189, 248, 0.2) !important;
-  padding: 14px 20px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-
-.ask-raven-logo-head {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
-  background: #090d16;
-  padding: 2px;
-}
-
-.ask-raven-azure-badge {
-  background: rgba(56, 189, 248, 0.12) !important;
-  color: #38bdf8 !important;
-  border: 1px solid rgba(56, 189, 248, 0.3) !important;
-  font-size: 0.68rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.03em !important;
-  padding: 3px 8px !important;
-  border-radius: 999px !important;
-}
-
-.ask-raven-close {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #94a3b8;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+.command-palette-search-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ask-raven-close:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #fca5a5;
-  transform: scale(1.05);
-}
-
-.ask-raven-history {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 4px;
-}
-
-.ask-raven-msg {
-  display: flex;
+  padding: 16px 20px;
+  border-bottom: 1px solid #1e293b;
   gap: 12px;
-  align-items: flex-start;
-}
-
-.ask-raven-msg.user {
-  flex-direction: row-reverse;
-}
-
-.ask-raven-msg-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
   background: #0f172a;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
+}
+
+.command-palette-icon {
+  width: 22px;
+  height: 22px;
   color: #38bdf8;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-.ask-raven-msg.user .ask-raven-msg-avatar {
-  background: #0284c7;
-  color: #ffffff;
-  border-color: #0284c7;
+.command-palette-input {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  color: #ffffff !important;
+  font-size: 1.05rem !important;
+  font-family: var(--font, 'Inter', sans-serif) !important;
+  padding: 0 !important;
+  box-shadow: none !important;
 }
 
-.ask-raven-msg-bubble {
-  max-width: 86%;
-  padding: 12px 16px;
-  border-radius: 4px 14px 14px 14px;
-  font-size: 0.84rem;
-  line-height: 1.58;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #1e293b;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+.command-palette-input::placeholder {
+  color: #64748b;
+  font-size: 0.95rem;
 }
 
-.ask-raven-msg.user .ask-raven-msg-bubble {
-  border-radius: 14px 4px 14px 14px;
-  background: #0284c7;
-  color: #ffffff;
-  border-color: #0284c7;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
-}
-
-.ask-raven-chips {
+.command-palette-kbd-hints {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
-.ask-raven-chip {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  padding: 6px 12px;
+.cmd-kbd {
+  background: #1e293b;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-family: inherit;
+  padding: 2px 6px;
+  font-weight: 600;
+}
+
+.command-palette-body {
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 12px 14px 16px 14px;
+}
+
+.command-palette-body::-webkit-scrollbar {
+  width: 6px;
+}
+.command-palette-body::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.cmd-group {
+  margin-bottom: 14px;
+}
+
+.cmd-group-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+  padding: 6px 10px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cmd-group-count {
+  font-size: 0.65rem;
+  background: #1e293b;
+  color: #94a3b8;
+  padding: 1px 6px;
   border-radius: 999px;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  color: #f1f5f9;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.cmd-item:hover,
+.cmd-item.selected {
+  background: #1e293b;
+  border-color: #334155;
+  transform: translateX(2px);
+}
+
+.cmd-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cmd-item-icon {
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.cmd-item.selected .cmd-item-icon {
+  color: #38bdf8;
+}
+
+.cmd-item-info {
+  min-width: 0;
+}
+
+.cmd-item-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmd-item-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.cmd-item-badge {
+  font-size: 0.70rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  background: #334155;
+  color: #e2e8f0;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.cmd-item-badge.badge-success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.cmd-item-badge.badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.cmd-item-badge.badge-info    { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+
+.command-palette-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: #090e17;
+  border-top: 1px solid #1e293b;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.command-palette-footer-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   Staging & Human-In-The-Loop (HITL) Review Modal
+   ========================================================================== */
+
+.staging-modal-box {
+  max-width: 1080px !important;
+  width: 96% !important;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.staging-header-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.staging-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.staging-stat-pill.high {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.staging-stat-pill.med {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.staging-stat-pill.low {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.staging-table-wrapper {
+  overflow-x: auto;
+  max-height: 480px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.staging-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.80rem;
+  text-align: left;
+  background: #ffffff;
+}
+
+.staging-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.staging-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.staging-table tr:hover td {
+  background: #f8fafc;
+}
+
+.staging-table tr.rejected-row td {
+  background: #fff1f2;
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.confidence-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.confidence-indicator.high { background: #dcfce7; color: #15803d; }
+.confidence-indicator.med  { background: #fef3c7; color: #b45309; }
+.confidence-indicator.low  { background: #fee2e2; color: #b91c1c; }
+
+.tech-suggest-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  border-radius: 6px;
   font-size: 0.74rem;
   font-weight: 500;
-  color: #334155;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
+}
+
+.tech-suggest-chip:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.staging-input-inline {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 0.80rem;
+  background: transparent;
+  font-family: inherit;
+}
+
+.staging-input-inline:focus,
+.staging-input-inline:hover {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+/* ==========================================================================
+   Enterprise SSO Button (Microsoft Entra ID / ECS Informatique)
+   ========================================================================== */
+
+.auth-sso-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 18px 0 14px 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-sso-divider::before,
+.auth-sso-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.auth-sso-divider span {
+  padding: 0 10px;
+}
+
+.auth-sso-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--r-sm, 6px);
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.ask-raven-chip:hover {
-  background: #f0f9ff;
-  border-color: #0284c7;
-  color: #0284c7;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 8px rgba(2, 132, 199, 0.15);
-}
-
-.ask-raven-dropzone {
-  border: 1.5px dashed #94a3b8;
-  border-radius: 10px;
-  padding: 16px;
-  text-align: center;
+.auth-sso-btn:hover {
   background: #f8fafc;
-  transition: all 0.2s ease;
-  margin-top: 14px;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.ask-raven-dropzone:hover {
-  border-color: #0284c7;
-  background: #f0f9ff;
-  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.08);
+.auth-sso-logo {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
+
 
 /* NetSuite Data Table Clean Zebra & Financial Cell Hierarchy */
 .data-table,

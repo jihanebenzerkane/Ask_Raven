@@ -1,4 +1,5 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+RUN apt-get update && apt-get install -y tesseract-ocr tesseract-ocr-fra && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 
 COPY Raven.csproj .

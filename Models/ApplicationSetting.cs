@@ -1,11 +1,11 @@
-﻿namespace Raven.Models;
+namespace Raven.Models;
 
 public class ApplicationSetting
 {
     public int Id { get; set; }
 
     // ========================================================
-    // IdentitÃ© entreprise
+    // Identité entreprise
     // ========================================================
 
     public string CompanyName { get; set; } = "Raven";
@@ -27,7 +27,7 @@ public class ApplicationSetting
 
 
     // ========================================================
-    // Valeurs mÃ©tier par dÃ©faut
+    // Valeurs métier par défaut
     // ========================================================
 
     public int DefaultHours { get; set; } = 40;
@@ -38,7 +38,7 @@ public class ApplicationSetting
 
     // ========================================================
     // Agences / Bases
-    // StockÃ©es en JSON car liste simple de strings.
+    // Stockées en JSON car liste simple de strings.
     // ========================================================
 
     public string AgencesJson { get; set; } = "[]";

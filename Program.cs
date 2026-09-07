@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Threading.RateLimiting;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -81,65 +81,69 @@ builder.Services.AddScoped<ScoringService>();
 builder.Services.AddScoped<ExcelImportService>();
 builder.Services.AddScoped<PdfExportService>();
 builder.Services.AddScoped<CsvExportService>();
+builder.Services.AddScoped<StagingService>();
 
 
 // ------------------------------------------------------------
-// AUTHENTICATION
+// AUTHENTICATION & ENTERPRISE SSO
 // ------------------------------------------------------------
 //
-// IMPORTANT:
-//
-// This is the temporary/stable local authentication layer.
-//
-// Microsoft Entra ID will become the enterprise identity
-// provider after the local application is stable.
-//
-// Cookie name is now consistently Raven.Auth.
+// Dual-mode authentication:
+// 1. Local secure cookie auth (Raven.Auth)
+// 2. Microsoft Entra ID (OpenID Connect) for corporate ECS federation
 // ------------------------------------------------------------
 
 var cookieName =
     builder.Configuration["Authentication:CookieName"]
     ?? "Raven.Auth";
 
-builder.Services
-    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+var entraTenantId = builder.Configuration["EntraId:TenantId"];
+var entraClientId = builder.Configuration["EntraId:ClientId"];
+
+var authBuilder = builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
     .AddCookie(options =>
     {
         options.Cookie.Name = cookieName;
-
-        // JavaScript cannot directly read the authentication cookie.
         options.Cookie.HttpOnly = true;
-
-        // Same-site protection.
         options.Cookie.SameSite = SameSiteMode.Lax;
-
-        // HTTPS in production.
-        options.Cookie.SecurePolicy =
-            CookieSecurePolicy.SameAsRequest;
-
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
         options.ExpireTimeSpan = TimeSpan.FromHours(
-            builder.Configuration.GetValue<int?>(
-                "Authentication:SessionHours") ?? 8);
-
+            builder.Configuration.GetValue<int?>("Authentication:SessionHours") ?? 8);
         options.SlidingExpiration = true;
 
-        // Never redirect API calls to an HTML login page.
         options.Events.OnRedirectToLogin = context =>
         {
-            context.Response.StatusCode =
-                StatusCodes.Status401Unauthorized;
-
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
         };
 
         options.Events.OnRedirectToAccessDenied = context =>
         {
-            context.Response.StatusCode =
-                StatusCodes.Status403Forbidden;
-
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         };
     });
+
+if (!string.IsNullOrWhiteSpace(entraClientId))
+{
+    authBuilder.AddOpenIdConnect("EntraId", options =>
+    {
+        options.Authority = $"https://login.microsoftonline.com/{(string.IsNullOrWhiteSpace(entraTenantId) ? "common" : entraTenantId)}/v2.0";
+        options.ClientId = entraClientId;
+        options.ClientSecret = builder.Configuration["EntraId:ClientSecret"];
+        options.ResponseType = "code";
+        options.SaveTokens = true;
+        options.CallbackPath = "/signin-oidc";
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+    });
+}
 
 
 // ------------------------------------------------------------
@@ -164,6 +168,13 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireAuthenticatedUser();
         policy.RequireRole("Responsable", "Technicien");
+    });
+
+    options.AddPolicy("EcsEmployee", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(ctx =>
+            ctx.User.HasClaim(c => c.Type == "TenantDomain" || c.Type == "groups" || c.Type == ClaimTypes.Role));
     });
 });
 
@@ -259,8 +270,8 @@ if (string.IsNullOrWhiteSpace(connectionString))
 {
     throw new InvalidOperationException(
         """
-        Raven ne peut pas dÃ©marrer car aucune chaÃ®ne
-        de connexion SQL Server n'est configurÃ©e.
+        Raven ne peut pas dÃƒÂ©marrer car aucune chaÃƒÂ®ne
+        de connexion SQL Server n'est configurÃƒÂ©e.
 
         Configurez la variable d'environnement:
 
@@ -301,7 +312,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.EnableSensitiveDataLogging(false);
 });
 
-
+// --- Smart Import AI Services ---
+builder.Services.AddHttpClient();
 // ------------------------------------------------------------
 // BUILD
 // ------------------------------------------------------------
@@ -335,7 +347,7 @@ using (var scope = app.Services.CreateScope())
         if (!canConnect)
         {
             throw new InvalidOperationException(
-                "Raven ne peut pas se connecter Ã  SQL Server.");
+                "Raven ne peut pas se connecter ÃƒÂ  SQL Server.");
         }
 
         logger.LogInformation(
@@ -370,7 +382,7 @@ using (var scope = app.Services.CreateScope())
                 {
                     Nom = "TGBT",
                     Description =
-                        "Tableaux GÃ©nÃ©raux Basse Tension et Armoires Ã‰lectriques"
+                        "Tableaux Généraux Basse Tension et Armoires Électriques"
                 },
 
                 new()
@@ -382,35 +394,35 @@ using (var scope = app.Services.CreateScope())
 
                 new()
                 {
-                    Nom = "Groupe Ã‰lectrogÃ¨ne",
+                    Nom = "Groupe Électrogène",
                     Description =
-                        "Groupes Ã‰lectrogÃ¨nes et Onduleurs de secours"
+                        "Groupes Électrogènes et Onduleurs de secours"
                 },
 
                 new()
                 {
                     Nom = "Compresseur",
                     Description =
-                        "Centrales d'air comprimÃ© et pompes industrielles"
+                        "Centrales d'air comprimé et pompes industrielles"
                 },
 
                 new()
                 {
                     Nom = "Automatisme",
                     Description =
-                        "Automates programmables, TÃ©lÃ©gestion et RÃ©gulation"
+                        "Automates programmables, Télégestion et Régulation"
                 },
 
                 new()
                 {
-                    Nom = "Ã‰lectricitÃ© industrielle",
+                    Nom = "Électricité industrielle",
                     Description =
-                        "Installations et cÃ¢blages Ã©lectriques industriels"
+                        "Installations et câblages électriques industriels"
                 },
 
                 new()
                 {
-                    Nom = "Informatique & RÃ©seau",
+                    Nom = "Informatique & Réseau",
                     Description =
                         "Serveurs, Postes, Baies de brassage et Switchs"
                 }
@@ -447,7 +459,7 @@ using (var scope = app.Services.CreateScope())
                                 "Safi",
                                 "Marrakech",
                                 "Agadir",
-                                "FÃ¨s"
+                                "Fès"
                             })
                 };
 
@@ -667,3 +679,5 @@ public sealed class ApplicationInfo
     public string FullName { get; init; } =
         "Raven Maintenance Management Platform";
 }
+
+

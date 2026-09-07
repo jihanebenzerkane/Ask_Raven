@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -29,25 +29,25 @@ namespace Raven.Services
             var from = _configuration["Smtp:From"] ?? "no-reply@Raven.ma";
             var enableSsl = bool.TryParse(_configuration["Smtp:EnableSsl"], out var ssl) && ssl;
 
-            var subject = "Raven â€” RÃ©initialisation de votre mot de passe";
+            var subject = "Raven — Réinitialisation de votre mot de passe";
 
-            var textBody = $@"Raven â€” Maintenance Industrielle
+            var textBody = $@"Raven — Maintenance Industrielle
 
-Une demande de rÃ©initialisation de mot de passe a Ã©tÃ© effectuÃ©e pour votre compte.
+Une demande de réinitialisation de mot de passe a été effectuée pour votre compte.
 
-Pour dÃ©finir un nouveau mot de passe, veuillez ouvrir le lien suivant dans votre navigateur :
+Pour définir un nouveau mot de passe, veuillez ouvrir le lien suivant dans votre navigateur :
 {resetLink}
 
 Ce lien est valable pendant 30 minutes.
 
-Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e-mail.
+Si vous n'êtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e-mail.
 ";
 
             var htmlBody = $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
-    <title>Raven â€” RÃ©initialisation</title>
+    <title>Raven — Réinitialisation</title>
 </head>
 <body style=""font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f7; margin: 0; padding: 30px;"">
     <div style=""max-width: 500px; margin: 0 auto; background-color: #ffffff; border: 1px solid #d2d2d7; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);"">
@@ -57,17 +57,17 @@ Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e
         </div>
         <div style=""border-top: 1px solid #e8e8ed; padding-top: 20px; color: #1d1d1f; font-size: 15px; line-height: 1.5;"">
             <p style=""margin: 0 0 16px 0;"">Bonjour,</p>
-            <p style=""margin: 0 0 20px 0;"">Une demande de rÃ©initialisation de mot de passe a Ã©tÃ© demandÃ©e pour votre compte Raven.</p>
+            <p style=""margin: 0 0 20px 0;"">Une demande de réinitialisation de mot de passe a été demandée pour votre compte Raven.</p>
             <div style=""text-align: center; margin: 28px 0;"">
                 <a href=""{resetLink}"" style=""background-color: #0d9488; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; display: inline-block;"">
-                    RÃ©initialiser mon mot de passe
+                    Réinitialiser mon mot de passe
                 </a>
             </div>
             <p style=""color: #6e6e73; font-size: 13px; margin: 0 0 10px 0;"">
                 Ce lien est valable pendant <strong>30 minutes</strong>.
             </p>
             <p style=""color: #86868b; font-size: 12px; margin: 0;"">
-                Si vous n'avez pas demandÃ© cette rÃ©initialisation, veuillez ignorer ce message en toute sÃ©curitÃ©.
+                Si vous n'avez pas demandé cette réinitialisation, veuillez ignorer ce message en toute sécurité.
             </p>
         </div>
     </div>
@@ -76,9 +76,9 @@ Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e
 
             if (string.IsNullOrWhiteSpace(host))
             {
-                // Mode dÃ©veloppement : loguer le lien gÃ©nÃ©rÃ©
+                // Mode développement : loguer le lien généré
                 _logger.LogInformation(
-                    "[EmailService DEV] E-mail de rÃ©initialisation pour {ToEmail} :\nLien de rÃ©initialisation : {ResetLink}",
+                    "[EmailService DEV] E-mail de réinitialisation pour {ToEmail} :\nLien de réinitialisation : {ResetLink}",
                     toEmail,
                     resetLink);
                 return;
@@ -112,11 +112,11 @@ Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e
 
                 await client.SendMailAsync(mailMessage);
 
-                _logger.LogInformation("E-mail de rÃ©initialisation envoyÃ© avec succÃ¨s Ã  {ToEmail}.", toEmail);
+                _logger.LogInformation("E-mail de réinitialisation envoyé avec succès Ã  {ToEmail}.", toEmail);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ã‰chec lors de l'envoi de l'e-mail de rÃ©initialisation Ã  {ToEmail}.", toEmail);
+                _logger.LogError(ex, "Échec lors de l'envoi de l'e-mail de réinitialisation Ã  {ToEmail}.", toEmail);
             }
         }
 
@@ -132,7 +132,7 @@ Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e
             if (string.IsNullOrWhiteSpace(host))
             {
                 _logger.LogInformation(
-                    "[EmailService DEV] E-mail non envoyÃ© (SMTP non configurÃ©). Sujet : {Subject} â†’ {ToEmail}",
+                    "[EmailService DEV] E-mail non envoyé (SMTP non configuré). Sujet : {Subject} â†’ {ToEmail}",
                     subject, toEmail);
                 return;
             }
@@ -159,11 +159,11 @@ Si vous n'Ãªtes pas Ã  l'origine de cette demande, vous pouvez ignorer cet e
                 mailMessage.To.Add(toEmail);
                 await client.SendMailAsync(mailMessage);
 
-                _logger.LogInformation("E-mail '{Subject}' envoyÃ© avec succÃ¨s Ã  {ToEmail}.", subject, toEmail);
+                _logger.LogInformation("E-mail '{Subject}' envoyé avec succès Ã  {ToEmail}.", subject, toEmail);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ã‰chec de l'envoi de l'e-mail '{Subject}' Ã  {ToEmail}.", subject, toEmail);
+                _logger.LogError(ex, "Échec de l'envoi de l'e-mail '{Subject}' Ã  {ToEmail}.", subject, toEmail);
                 throw; // Let caller handle (AuthController catches and logs gracefully)
             }
         }

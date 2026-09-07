@@ -47,10 +47,10 @@ const App = {
   },
 
   async init() {
-    console.log("TechnoVIS Initialisation...");
+    console.log("Raven Initialisation...");
 
     // 1. Restaurer l'état du panneau latéral
-    if (localStorage.getItem("technovis_sidebar_collapsed") === "1") {
+    if (localStorage.getItem("raven_sidebar_collapsed") === "1" || localStorage.getItem("technovis_sidebar_collapsed") === "1") {
       document.body.classList.add("sidebar-collapsed");
     }
 
@@ -249,6 +249,41 @@ const App = {
         idInput.value = "karim.alami@raven.com";
         pwdInput.value = "ChangeMe2026!";
         document.getElementById("form-auth-login")?.requestSubmit();
+      }
+    });
+
+    // 1.c Connexion Enterprise SSO (Microsoft Entra ID / OIDC & Simulation Défense)
+    document.getElementById("btn-sso-login")?.addEventListener("click", async () => {
+      const btn = document.getElementById("btn-sso-login");
+      const origHtml = btn ? btn.innerHTML : "";
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;">Connexion Microsoft Entra ID…</span>`;
+      }
+      try {
+        const meta = await this.fetchApi("/api/auth/sso/metadata");
+        if (meta && meta.isConfigured) {
+          window.location.href = "/api/auth/sso/login";
+          return;
+        }
+        // Mode Simulation Directe pour l'évaluation / soutenance
+        const res = await this.fetchApi("/api/auth/sso/demo-simulate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}"
+        });
+        await this.checkAuth();
+        this.showApp();
+        this.showToast(`Authentifié via Microsoft Entra ID (ECS Employee) : ${this.state.user?.nomComplet || 'Directeur Maintenance'}`);
+        await this.loadCompanySettings();
+        await this.loadAllData();
+      } catch (err) {
+        this.showToast(err.message || "Erreur lors de la connexion SSO.", "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
       }
     });
 
@@ -797,6 +832,7 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
       btnToggle.addEventListener("click", () => {
         document.body.classList.toggle("sidebar-collapsed");
         const isCollapsed = document.body.classList.contains("sidebar-collapsed");
+        localStorage.setItem("raven_sidebar_collapsed", isCollapsed ? "1" : "0");
         localStorage.setItem("technovis_sidebar_collapsed", isCollapsed ? "1" : "0");
       });
     }
@@ -853,16 +889,20 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
     document.getElementById("filter-risque-equipement")?.addEventListener("change", () => this.renderEquipements());
     document.getElementById("filter-statut-equipement")?.addEventListener("change", () => this.renderEquipements());
 
-    // Import Excel Équipements
+    // Global Smart Import & HITL Staging Review Modal
     document.getElementById("btn-open-modal-import-equipements")?.addEventListener("click", () => this.openImportEquipementsModal());
+    document.getElementById("btn-open-global-import")?.addEventListener("click", () => this.openImportEquipementsModal());
     document.getElementById("close-modal-import-equipements")?.addEventListener("click", () => this.closeModal("modal-import-equipements"));
     document.getElementById("btn-cancel-import-eq")?.addEventListener("click", () => this.closeModal("modal-import-equipements"));
     document.getElementById("input-excel-equipements")?.addEventListener("change", (e) => {
-      document.getElementById("btn-preview-excel-eq").disabled = !e.target.files.length;
+      const btn = document.getElementById("btn-preview-excel-eq");
+      if (btn) btn.disabled = !e.target.files || !e.target.files.length;
     });
-    document.getElementById("btn-preview-excel-eq")?.addEventListener("click", () => this.handleEquipementsExcelPreview());
+    document.getElementById("btn-preview-excel-eq")?.addEventListener("click", () => this.handleSmartImportProcess());
     document.getElementById("btn-back-import-eq")?.addEventListener("click", () => this.showImportEqStep(1));
-    document.getElementById("btn-confirm-import-eq")?.addEventListener("click", () => this.handleEquipementsExcelConfirm());
+    document.getElementById("btn-confirm-import-eq")?.addEventListener("click", () => this.handleStagingCommit());
+    document.getElementById("btn-discard-staging-batch")?.addEventListener("click", () => this.handleStagingDiscard());
+    document.getElementById("staging-search-input")?.addEventListener("input", (e) => this.filterStagingTable(e.target.value));
 
     // Modal Techniciens
     document.getElementById("btn-open-modal-technicien")?.addEventListener("click", () => this.openTechnicienModal());
@@ -987,7 +1027,7 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
     });
 
     document.getElementById("btn-save-settings")?.addEventListener("click", () => {
-      this.state.settings.companyName = document.getElementById("set-company-name").value.trim() || "TechnoVIS";
+      this.state.settings.companyName = document.getElementById("set-company-name").value.trim() || "Raven";
       this.state.settings.companySlogan = document.getElementById("set-company-slogan").value.trim();
       this.state.settings.companyEmail = document.getElementById("set-company-email").value.trim();
       this.state.settings.companyPhone = document.getElementById("set-company-phone").value.trim();
@@ -1014,7 +1054,7 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state.settings, null, 2));
       const dlAnchor = document.createElement("a");
       dlAnchor.setAttribute("href", dataStr);
-      dlAnchor.setAttribute("download", `technovis_config_${new Date().toISOString().slice(0,10)}.json`);
+      dlAnchor.setAttribute("download", `raven_config_${new Date().toISOString().slice(0,10)}.json`);
       dlAnchor.click();
     });
   },
@@ -1838,196 +1878,322 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
   },
 
   /* ------------------------------------------------------------------------
-   * 4b. ASSISTANT RAVEN & AZURE AI DOCUMENT INTELLIGENCE
+   * 4b. "ASK RAVEN" NETSUITE COMMAND & SEARCH PALETTE (OVERLAY & REAL-TIME SQL)
    * ------------------------------------------------------------------------ */
   setupAskRavenModal() {
     const modal = document.getElementById("modal-ask-raven");
     const openBtn = document.getElementById("ask-raven-btn");
-    const closeBtn = document.getElementById("btn-close-modal-ask-raven");
-    const form = document.getElementById("form-ask-raven");
-    const input = document.getElementById("input-ask-raven");
-    const history = document.getElementById("ask-raven-history");
-    const dropzone = document.getElementById("ask-raven-ocr-dropzone");
-    const dropzoneTrigger = document.getElementById("ask-raven-dropzone-trigger");
-    const fileInput = document.getElementById("ask-raven-file-input");
-    const fileBadge = document.getElementById("ask-raven-file-badge");
-    const fileNameSpan = document.getElementById("ask-raven-file-name");
-    const removeFileBtn = document.getElementById("btn-remove-raven-file");
+    const input = document.getElementById("command-palette-input");
+    const defaultActions = document.getElementById("cmd-default-actions");
+    const dynamicResults = document.getElementById("cmd-dynamic-results");
 
     if (!modal) return;
 
-    let attachedFile = null;
+    let selectedIndex = -1;
+    let searchDebounce = null;
+    let currentItems = [];
 
-    const openModal = () => {
+    const openPalette = () => {
       modal.classList.add("active");
-      setTimeout(() => input?.focus(), 100);
+      if (input) {
+        input.value = "";
+        input.focus();
+      }
+      if (defaultActions) defaultActions.style.display = "block";
+      if (dynamicResults) {
+        dynamicResults.style.display = "none";
+        dynamicResults.innerHTML = "";
+      }
+      refreshFocusableItems();
     };
 
-    const closeModal = () => {
+    const closePalette = () => {
       modal.classList.remove("active");
+      if (input) input.blur();
+      selectedIndex = -1;
     };
 
-    openBtn?.addEventListener("click", openModal);
-    closeBtn?.addEventListener("click", closeModal);
+    openBtn?.addEventListener("click", openPalette);
 
-    // Raccourci clavier Ctrl+J / Cmd+J
+    // Global shortcut Ctrl+J / Cmd+J
     window.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
-        openModal();
-      }
-    });
-
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) closeModal();
-    });
-
-    // Gestion du téléversement de documents (Azure Document Intelligence)
-    dropzoneTrigger?.addEventListener("click", () => fileInput?.click());
-    dropzone?.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropzone.style.borderColor = "#0284c7";
-      dropzone.style.background = "#f0f9ff";
-    });
-    dropzone?.addEventListener("dragleave", () => {
-      dropzone.style.borderColor = "#cbd5e1";
-      dropzone.style.background = "#fafafa";
-    });
-    dropzone?.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropzone.style.borderColor = "#cbd5e1";
-      dropzone.style.background = "#fafafa";
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        handleFileSelected(e.dataTransfer.files[0]);
-      }
-    });
-
-    fileInput?.addEventListener("change", (e) => {
-      if (e.target.files && e.target.files[0]) {
-        handleFileSelected(e.target.files[0]);
-      }
-    });
-
-    const handleFileSelected = (file) => {
-      attachedFile = file;
-      if (fileBadge && fileNameSpan) {
-        fileNameSpan.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} Ko)`;
-        fileBadge.style.display = "flex";
-      }
-      addBotMessage(`Document <strong>"${file.name}"</strong>Posez une question sur ce document ou demandez-moi d'en extraire les équipements et dates d'intervention.`);
-    };
-
-    removeFileBtn?.addEventListener("click", () => {
-      attachedFile = null;
-      if (fileInput) fileInput.value = "";
-      if (fileBadge) fileBadge.style.display = "none";
-    });
-
-    const addUserMessage = (text) => {
-      if (!history) return;
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "ask-raven-msg user";
-      msgDiv.innerHTML = `
-        <div class="ask-raven-msg-avatar">AD</div>
-        <div class="ask-raven-msg-bubble">${this.escapeHtml(text)}</div>
-      `;
-      history.appendChild(msgDiv);
-      history.scrollTop = history.scrollHeight;
-    };
-
-    const addBotMessage = (htmlContent) => {
-      if (!history) return;
-      const msgDiv = document.createElement("div");
-      msgDiv.className = "ask-raven-msg bot";
-      msgDiv.innerHTML = `
-        <div class="ask-raven-msg-avatar">
-          <img src="logo.svg" alt="Raven" style="width:20px;height:20px;border-radius:3px;">
-        </div>
-        <div class="ask-raven-msg-bubble">${htmlContent}</div>
-      `;
-      history.appendChild(msgDiv);
-      history.scrollTop = history.scrollHeight;
-    };
-
-    // Traitement intelligent des prompts
-    const handleAskQuery = (prompt) => {
-      addUserMessage(prompt);
-      if (input) input.value = "";
-
-      const lower = prompt.toLowerCase();
-
-      setTimeout(() => {
-        if (attachedFile || lower.includes("ocr") || lower.includes("document") || lower.includes("pdf") || lower.includes("facture") || lower.includes("bon")) {
-          const docName = attachedFile ? attachedFile.name : "Document technique / Contrat";
-          addBotMessage(`
-            <div style="border-left: 3px solid #0284c7; padding-left: 10px; margin-bottom: 8px;">
-              
-            </div>
-            <div>
-              Fichier analysé : <strong>${docName}</strong><br>
-              <span style="font-size:0.75rem; color:#64748b;">Pipeline Python : DocumentModelAdministrationClient · layout & key-value parsing</span>
-            </div>
-            <div style="margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size:0.78rem;">
-              <div>✔️ <strong>Type détecté :</strong> Fiche de maintenance / Contrat préventif</div>
-              <div>✔️ <strong>Score de confiance OCR :</strong> 98.6%</div>
-              <div>✔️ <strong>Champs extraits :</strong> Référence client, 3 équipements identifiés, périodicité trimestrielle.</div>
-            </div>
-            <div style="margin-top: 8px;">
-              Les données extraites peuvent être injectées directement dans le catalogue SQL Server via notre passerelle Azure AI.
-            </div>
-          `);
-        } else if (lower.includes("alerte") || lower.includes("critique") || lower.includes("panne") || lower.includes("urgence")) {
-          const eqCritiques = (this.state.equipements || []).filter(e => (e.scoreRisque && e.scoreRisque >= 50) || (e.statut && e.statut.toLowerCase().includes("panne")));
-          if (eqCritiques.length > 0) {
-            const list = eqCritiques.slice(0, 4).map(e => `<li><strong>${e.nom}</strong> (${e.numeroSerie || 'N/A'}) — Risque ${e.scoreRisque ?? 75}/100 [${e.localisation || 'Atelier'}]</li>`).join("");
-            addBotMessage(`
-              Actuellement, <strong>${eqCritiques.length} équipement(s)</strong> requièrent une attention immédiate :
-              <ul style="margin: 6px 0 6px 16px; padding: 0;">${list}</ul>
-              Une intervention préventive est conseillée pour éviter tout arrêt de ligne.
-            `);
-          } else {
-            addBotMessage("Aucun équipement n'est actuellement en panne critique. Le parc machine est en état nominal.");
-          }
-        } else if (lower.includes("technicien") || lower.includes("disponible") || lower.includes("équipe") || lower.includes("karim")) {
-          const techs = (this.state.techniciens || []);
-          if (techs.length > 0) {
-            const list = techs.slice(0, 4).map(t => `<li><strong>${t.nomComplet}</strong> · Base: ${t.base || 'Siège'} (${t.specialite || 'Maintenance Générale'})</li>`).join("");
-            addBotMessage(`
-              L'équipe technique comprend <strong>${techs.length} technicien(s)</strong> opérationnels :
-              <ul style="margin: 6px 0 6px 16px; padding: 0;">${list}</ul>
-              Le moteur d'affectation automatique calcule le meilleur technicien selon la localisation et les compétences requises.
-            `);
-          } else {
-            addBotMessage("Aucun technicien n'est enregistré dans la base SQL Server pour le moment.");
-          }
-        } else if (lower.includes("visite") || lower.includes("planning") || lower.includes("calendrier") || lower.includes("préventif")) {
-          const visites = (this.state.visites || []);
-          const enAttente = visites.filter(v => v.statut === "Planifiée" || v.statut === "En attente");
-          addBotMessage(`
-            Le planning compte <strong>${visites.length} visite(s)</strong> au total, dont <strong>${enAttente.length}</strong> en attente ou planifiées pour les prochains jours.
-            Vous pouvez consulter la vue calendaire ou planifier une intervention via le bouton <strong>+ Planifier Visite</strong>.
-          `);
+        if (modal.classList.contains("active")) {
+          closePalette();
         } else {
-          addBotMessage(`
-            J'ai bien noté votre demande : <em>"${this.escapeHtml(prompt)}"</em>.<br><br>
-            En tant qu'assistant Raven connecté à votre base SQL Server et adossé à Azure AI Document Intelligence, je peux extraire vos contrats, fiches d'équipement, et optimiser vos tournées de techniciens. Pour une analyse de document, vous pouvez glisser-déposer un PDF ou une image ci-dessus.
-          `);
+          openPalette();
         }
-      }, 350);
-    };
-
-    form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const val = input?.value.trim();
-      if (val) handleAskQuery(val);
+      }
     });
 
-    // Suggestions chips
-    modal.querySelectorAll(".ask-raven-chip").forEach(chip => {
-      chip.addEventListener("click", () => {
-        const prompt = chip.getAttribute("data-prompt");
-        if (prompt) handleAskQuery(prompt);
+    // Close on background click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) closePalette();
+    });
+
+    const refreshFocusableItems = () => {
+      currentItems = Array.from(modal.querySelectorAll(".cmd-item"));
+      selectedIndex = -1;
+      updateActiveItem();
+    };
+
+    const updateActiveItem = () => {
+      currentItems.forEach((item, idx) => {
+        item.classList.toggle("active", idx === selectedIndex);
       });
+      if (selectedIndex >= 0 && currentItems[selectedIndex]) {
+        currentItems[selectedIndex].scrollIntoView({ block: "nearest" });
+      }
+    };
+
+    const executeAction = (actionType, targetId, itemTitle) => {
+      closePalette();
+      switch (actionType) {
+        case "NEW_VISITE":
+          this.openPlanifierVisiteModal();
+          break;
+        case "OPEN_IMPORT":
+          this.openImportEquipementsModal();
+          break;
+        case "NAV_PLANNING":
+          this.switchTab("planning");
+          break;
+        case "EXPORT_AUDIT":
+          window.open("/api/equipements/export/pdf", "_blank");
+          break;
+        case "NAVIGATE_EQUIPEMENT":
+          this.switchTab("equipements");
+          if (itemTitle) {
+            const searchInput = document.getElementById("search-equipements");
+            if (searchInput) {
+              searchInput.value = itemTitle;
+              this.renderEquipements();
+            }
+          }
+          break;
+        case "NAVIGATE_MARCHE":
+          this.switchTab("marches");
+          break;
+        case "NAVIGATE_TECHNICIEN":
+          this.switchTab("techniciens");
+          break;
+        case "NAVIGATE_VISITE":
+          this.switchTab("visites");
+          break;
+        default:
+          console.log("Action inconnue:", actionType);
+      }
+    };
+
+    // Bind default action clicks
+    modal.querySelectorAll(".cmd-item[data-action]").forEach(item => {
+      item.addEventListener("click", () => {
+        const action = item.getAttribute("data-action");
+        if (action) executeAction(action, null, null);
+      });
+    });
+
+    // Dynamic Live Server Query with Debounce
+    input?.addEventListener("input", (e) => {
+      const q = e.target.value.trim();
+      clearTimeout(searchDebounce);
+
+      if (!q) {
+        if (defaultActions) defaultActions.style.display = "block";
+        if (dynamicResults) {
+          dynamicResults.style.display = "none";
+          dynamicResults.innerHTML = "";
+        }
+        refreshFocusableItems();
+        return;
+      }
+
+      // Check for quick slash commands
+      const lower = q.toLowerCase();
+      if (lower === "/visite") {
+        executeAction("NEW_VISITE");
+        return;
+      }
+      if (lower === "/import") {
+        executeAction("OPEN_IMPORT");
+        return;
+      }
+      if (lower === "/planning") {
+        executeAction("NAV_PLANNING");
+        return;
+      }
+      if (lower === "/export") {
+        executeAction("EXPORT_AUDIT");
+        return;
+      }
+
+      if (defaultActions) defaultActions.style.display = "none";
+      if (dynamicResults) {
+        dynamicResults.style.display = "block";
+        dynamicResults.innerHTML = `
+          <div style="padding: 24px; text-align: center; color: #94a3b8; font-size: 0.88rem;">
+            <span class="loading-spinner" style="display:inline-block; vertical-align:middle; margin-right:8px;"></span>
+            Recherche globale SQL Server en cours…
+          </div>
+        `;
+      }
+
+      searchDebounce = setTimeout(async () => {
+        try {
+          const res = await this.fetchApi(`/api/search?q=${encodeURIComponent(q)}`);
+          renderResults(res);
+        } catch (err) {
+          if (dynamicResults) {
+            dynamicResults.innerHTML = `
+              <div style="padding: 20px; text-align: center; color: #f87171; font-size: 0.84rem;">
+                Erreur lors de la recherche : ${this.escapeHtml(err.message)}
+              </div>
+            `;
+          }
+        }
+      }, 180);
+    });
+
+    const getIconSvg = (category) => {
+      switch (category) {
+        case "Equipement":
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+        case "Marche":
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+        case "Technicien":
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        case "Visite":
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+        default:
+          return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+      }
+    };
+
+    const renderResults = (data) => {
+      if (!dynamicResults) return;
+      dynamicResults.innerHTML = "";
+
+      const categories = (data && data.categories) || [];
+      const quickActions = (data && data.quickActions) || [];
+      const hasCategories = categories.some(c => c.items && c.items.length > 0);
+
+      if (!hasCategories && quickActions.length === 0) {
+        dynamicResults.innerHTML = `
+          <div style="padding: 30px 20px; text-align: center; color: #94a3b8;">
+            <div style="font-size: 1.5rem; margin-bottom: 6px;">🔍</div>
+            <div style="font-weight: 600; color: #cbd5e1; font-size: 0.9rem;">Aucun résultat trouvé</div>
+            <div style="font-size: 0.8rem; margin-top: 4px;">Essayez avec un nom d'équipement, n° de série, matricule ou commande /visite</div>
+          </div>
+        `;
+        refreshFocusableItems();
+        return;
+      }
+
+      // 1. Actions rapides correspondantes
+      if (quickActions.length > 0) {
+        const actionGroup = document.createElement("div");
+        actionGroup.className = "cmd-group";
+        actionGroup.innerHTML = `
+          <div class="cmd-group-title">
+            <span>Actions Rapides & Commandes</span>
+            <span style="font-size:0.7rem; font-weight:600; color:#64748b;">${quickActions.length}</span>
+          </div>
+        `;
+        quickActions.forEach(qa => {
+          const itemEl = document.createElement("div");
+          itemEl.className = "cmd-item";
+          itemEl.setAttribute("data-action", qa.actionType || "");
+          itemEl.innerHTML = `
+            <div class="cmd-item-left">
+              ${getIconSvg("Action")}
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">${this.escapeHtml(qa.command)} — ${this.escapeHtml(qa.label)}</div>
+                <div class="cmd-item-sub">${this.escapeHtml(qa.description || '')}</div>
+              </div>
+            </div>
+            <span class="cmd-item-badge">Commande</span>
+          `;
+          itemEl.addEventListener("click", () => {
+            executeAction(qa.actionType, null, null);
+          });
+          actionGroup.appendChild(itemEl);
+        });
+        dynamicResults.appendChild(actionGroup);
+      }
+
+      // 2. Catégories d'entités SQL Server
+      categories.forEach(cat => {
+        if (!cat.items || cat.items.length === 0) return;
+        const groupEl = document.createElement("div");
+        groupEl.className = "cmd-group";
+        groupEl.innerHTML = `
+          <div class="cmd-group-title">
+            <span>${this.escapeHtml(cat.name)}</span>
+            <span style="font-size:0.7rem; font-weight:600; color:#64748b;">${cat.items.length}</span>
+          </div>
+        `;
+
+        cat.items.forEach(item => {
+          const itemEl = document.createElement("div");
+          itemEl.className = "cmd-item";
+          const actionType = item.targetNav === "equipements" ? "NAVIGATE_EQUIPEMENT"
+                           : item.targetNav === "marches" ? "NAVIGATE_MARCHE"
+                           : item.targetNav === "techniciens" ? "NAVIGATE_TECHNICIEN"
+                           : item.targetNav === "visites" ? "NAVIGATE_VISITE"
+                           : "NAVIGATE_EQUIPEMENT";
+
+          itemEl.setAttribute("data-action", actionType);
+          if (item.id) itemEl.setAttribute("data-target-id", item.id);
+
+          itemEl.innerHTML = `
+            <div class="cmd-item-left">
+              ${getIconSvg(item.entityType)}
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">${this.escapeHtml(item.title)}</div>
+                <div class="cmd-item-sub">${this.escapeHtml(item.subtitle || '')}</div>
+              </div>
+            </div>
+            <span class="cmd-item-badge">${this.escapeHtml(item.badge || item.entityType)}</span>
+          `;
+
+          itemEl.addEventListener("click", () => {
+            executeAction(actionType, item.id, item.title);
+          });
+
+          groupEl.appendChild(itemEl);
+        });
+
+        dynamicResults.appendChild(groupEl);
+      });
+
+      refreshFocusableItems();
+    };
+
+    // Keyboard Navigation: ArrowUp, ArrowDown, Enter, Escape
+    input?.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (currentItems.length > 0) {
+          selectedIndex = (selectedIndex + 1) % currentItems.length;
+          updateActiveItem();
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (currentItems.length > 0) {
+          selectedIndex = (selectedIndex - 1 + currentItems.length) % currentItems.length;
+          updateActiveItem();
+        }
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (currentItems.length > 0) {
+          const idx = selectedIndex >= 0 ? selectedIndex : 0;
+          currentItems[idx]?.click();
+        }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        closePalette();
+      }
     });
   },
 
@@ -2324,117 +2490,279 @@ document.getElementById("btn-confirm-smart-import")?.addEventListener("click", (
     }
   },
 
-  /* ── IMPORT EXCEL ÉQUIPEMENTS ── */
+  /* ── GLOBAL SMART IMPORT & HUMAN-IN-THE-LOOP (HITL) STAGING ── */
   openImportEquipementsModal() {
     const fileInput = document.getElementById("input-excel-equipements");
     if (fileInput) fileInput.value = "";
-    document.getElementById("btn-preview-excel-eq").disabled = true;
+    const previewBtn = document.getElementById("btn-preview-excel-eq");
+    if (previewBtn) {
+      previewBtn.disabled = true;
+      previewBtn.textContent = "Lancer l'extraction vers Staging (HITL)";
+    }
     const errDiv = document.getElementById("import-eq-error-msg");
     if (errDiv) { errDiv.textContent = ""; errDiv.style.display = "none"; }
-    this._equipementsImportAllRows = null;
+    
+    // Réinitialiser les indicateurs du lot
+    const batchIdBadge = document.getElementById("staging-active-batch-id");
+    if (batchIdBadge) { batchIdBadge.style.display = "none"; batchIdBadge.textContent = ""; }
+    const statsHeader = document.getElementById("staging-header-stats");
+    if (statsHeader) statsHeader.style.display = "none";
+    const tbody = document.getElementById("staging-records-tbody");
+    if (tbody) tbody.innerHTML = "";
+    const searchInput = document.getElementById("staging-search-input");
+    if (searchInput) searchInput.value = "";
+
+    this._stagingBatch = null;
     this.showImportEqStep(1);
     this.openModal("modal-import-equipements");
   },
 
   showImportEqStep(step) {
-    document.getElementById("import-eq-step-1").style.display = step === 1 ? "block" : "none";
-    document.getElementById("import-eq-step-2").style.display = step === 2 ? "block" : "none";
+    const step1 = document.getElementById("import-eq-step-1");
+    const step2 = document.getElementById("import-eq-step-2");
+    if (step1) step1.style.display = step === 1 ? "block" : "none";
+    if (step2) step2.style.display = step === 2 ? "flex" : "none";
   },
 
-  async handleEquipementsExcelPreview() {
+  async handleSmartImportProcess() {
     const fileInput = document.getElementById("input-excel-equipements");
     if (!fileInput || !fileInput.files.length) return;
 
+    const entitySelect = document.getElementById("import-entity-type");
+    const entityType = entitySelect ? entitySelect.value : "AutoDetect";
+
     const btn = document.getElementById("btn-preview-excel-eq");
-    btn.textContent = "Analyse en cours…";
-    btn.disabled = true;
+    if (btn) {
+      btn.textContent = "Extraction & Calcul Confiance (HITL)…";
+      btn.disabled = true;
+    }
+    const errDiv = document.getElementById("import-eq-error-msg");
+    if (errDiv) { errDiv.textContent = ""; errDiv.style.display = "none"; }
 
     const formData = new FormData();
     formData.append("file", fileInput.files[0]);
+    formData.append("entityType", entityType);
 
     try {
-      const resp = await fetch("/api/equipements/import/preview", { method: "POST", body: formData, credentials: "include" });
-      const result = await resp.json();
-      if (!resp.ok) {
-        const errDiv = document.getElementById("import-eq-error-msg");
-        errDiv.textContent = result.error || "Erreur d'analyse.";
-        errDiv.style.display = "block";
-        btn.textContent = "Analyser le fichier";
-        btn.disabled = false;
-        return;
-      }
-
-      this._equipementsImportAllRows = result.allRows;
-
-      if (!result.rowCount || result.rowCount === 0) {
-        const errDiv = document.getElementById("import-eq-error-msg");
-        errDiv.textContent = "Aucune ligne detectee. Verifiez que votre fichier utilise les colonnes correctes (N° Serie, Nom Equipement, Categorie...). Telechargez le modele pour vous assurer du bon format.";
-        errDiv.style.display = "block";
-        btn.textContent = "Analyser le fichier";
-        btn.disabled = false;
-        return;
-      }
-
-      document.getElementById("import-eq-summary").innerHTML = `
-        <strong>${result.rowCount}</strong> équipement(s) détecté(s). Aperçu des premières lignes et contrôles de cohérence :
-      `;
-
-      const tbody = document.getElementById("import-eq-preview-body");
-      tbody.innerHTML = "";
-      (result.preview || []).forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${r.rowIndex}</td>
-          <td><strong>${r.serialNumber || '—'}</strong></td>
-          <td>${r.nom || '—'}</td>
-          <td><span class="spec-badge">${r.categorie || '—'}</span></td>
-          <td>${r.clientNom || '—'}</td>
-          <td>${r.siteNom || '—'}</td>
-          <td>${r.criticite}/5</td>
-          <td>${r.statut}</td>
-          <td style="color: ${r.parseWarning ? '#f5a623' : '#34c38f'}; font-size:0.75rem;">
-            ${r.parseWarning || "✓ Valide"}
-          </td>
-        `;
-        tbody.appendChild(tr);
+      const resp = await fetch("/api/import/process", {
+        method: "POST",
+        body: formData,
+        credentials: "include"
       });
+      const result = await resp.json();
 
-      btn.textContent = "Analyser le fichier";
-      btn.disabled = false;
+      if (!resp.ok) {
+        if (errDiv) {
+          errDiv.textContent = result.error || "Erreur lors de l'extraction vers le Staging Buffer.";
+          errDiv.style.display = "block";
+        }
+        return;
+      }
+
+      this._stagingBatch = result;
+
+      // Charger la liste des techniciens pour les affectations si pas déjà chargée
+      if (!this._stagingTechniciensList) {
+        try {
+          this._stagingTechniciensList = await this.fetchApi("/api/import/techniciens");
+        } catch {
+          this._stagingTechniciensList = (this.state.techniciens || []).map(t => ({
+            id: t.id,
+            nomComplet: t.nomComplet,
+            specialite: t.specialite || "Maintenance"
+          }));
+        }
+      }
+
+      // Mise à jour de l'en-tête du Staging
+      const batchBadge = document.getElementById("staging-active-batch-id");
+      if (batchBadge) {
+        batchBadge.textContent = result.batchId;
+        batchBadge.style.display = "inline-block";
+      }
+
+      const statsHeader = document.getElementById("staging-header-stats");
+      const statHigh = document.getElementById("stat-high-conf");
+      const statMed = document.getElementById("stat-med-conf");
+      const statLow = document.getElementById("stat-low-conf");
+
+      if (statsHeader && statHigh && statMed && statLow) {
+        statHigh.textContent = `${result.highConfidenceCount || 0} Haute confiance (≥85%)`;
+        statMed.textContent = `${result.mediumConfidenceCount || 0} Modérée (50-84%)`;
+        statLow.textContent = `${result.lowConfidenceCount || 0} À vérifier (<50%)`;
+        statsHeader.style.display = "flex";
+      }
+
+      // Remplir le tableau interactif HITL Staging
+      this.renderStagingRecordsTable(result.records || []);
       this.showImportEqStep(2);
+
     } catch (e) {
-      console.error(e);
-      btn.textContent = "Analyser le fichier";
-      btn.disabled = false;
+      console.error("Smart Import Error:", e);
+      if (errDiv) {
+        errDiv.textContent = e.message || "Erreur de connexion au serveur lors de l'importation.";
+        errDiv.style.display = "block";
+      }
+    } finally {
+      if (btn) {
+        btn.textContent = "Lancer l'extraction vers Staging (HITL)";
+        btn.disabled = false;
+      }
     }
   },
 
-  async handleEquipementsExcelConfirm() {
-    if (!this._equipementsImportAllRows || !this._equipementsImportAllRows.length) return;
+  renderStagingRecordsTable(records) {
+    const tbody = document.getElementById("staging-records-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const techs = this._stagingTechniciensList || [];
+
+    records.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+      tr.className = "staging-row";
+      tr.setAttribute("data-record-id", r.id);
+
+      const confPct = Math.round((r.confidenceScore || 0) * 100);
+      let confBadgeClass = "conf-high";
+      if (confPct < 50) confBadgeClass = "conf-low";
+      else if (confPct < 85) confBadgeClass = "conf-med";
+
+      // Construction des options de techniciens avec détection de recommandation
+      let techOptions = `<option value="">-- Non affecté --</option>`;
+      techs.forEach(t => {
+        const isSelected = r.suggestedTechnicienId === t.id ? "selected" : "";
+        techOptions += `<option value="${t.id}" ${isSelected}>${this.escapeHtml(t.nomComplet)} (${this.escapeHtml(t.specialite || '')})</option>`;
+      });
+
+      const warningText = r.validationWarnings
+        ? `<span style="color:#d97706; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;">⚠️ ${this.escapeHtml(r.validationWarnings)}</span>`
+        : `<span style="color:#10b981; font-size:0.75rem;">✓ Validé</span>`;
+
+      tr.innerHTML = `
+        <td style="color:#64748b; font-size:0.78rem; font-weight:600;">${idx + 1}</td>
+        <td>
+          <span class="staging-conf-badge ${confBadgeClass}">
+            ${confPct}%
+          </span>
+        </td>
+        <td>
+          <input type="text" class="form-control staging-input" value="${this.escapeHtml(r.externalId || '')}" data-field="externalId" style="font-family:monospace; font-weight:600; width:100px;">
+        </td>
+        <td>
+          <input type="text" class="form-control staging-input" value="${this.escapeHtml(r.name || '')}" data-field="name" style="width:170px;">
+        </td>
+        <td>
+          <input type="text" class="form-control staging-input" value="${this.escapeHtml(r.category || '')}" data-field="category" style="width:120px;">
+        </td>
+        <td>
+          <input type="text" class="form-control staging-input" value="${this.escapeHtml(r.clientOrSite || '')}" data-field="clientOrSite" style="width:130px;">
+        </td>
+        <td>
+          <select class="form-control staging-select-tech" data-field="suggestedTechnicienId" style="width:170px; font-size:0.78rem;">
+            ${techOptions}
+          </select>
+        </td>
+        <td>${warningText}</td>
+        <td style="text-align:center;">
+          <button type="button" class="btn btn-sm btn-reject-staging-row" title="Exclure cette ligne" style="padding:2px 8px; font-size:0.75rem; color:#ef4444; border:1px solid #fca5a5; background:#fff; border-radius:4px; cursor:pointer;">
+            ✕
+          </button>
+        </td>
+      `;
+
+      // Bouton pour basculer l'état exclu/inclus de la ligne
+      tr.querySelector(".btn-reject-staging-row")?.addEventListener("click", () => {
+        tr.classList.toggle("rejected");
+        const isRejected = tr.classList.contains("rejected");
+        tr.style.opacity = isRejected ? "0.4" : "1";
+        tr.style.textDecoration = isRejected ? "line-through" : "none";
+      });
+
+      tbody.appendChild(tr);
+    });
+  },
+
+  filterStagingTable(query) {
+    const q = (query || "").toLowerCase().trim();
+    const rows = document.querySelectorAll("#staging-records-tbody tr.staging-row");
+    rows.forEach(tr => {
+      if (!q) {
+        tr.style.display = "";
+        return;
+      }
+      const text = tr.textContent.toLowerCase();
+      tr.style.display = text.includes(q) ? "" : "none";
+    });
+  },
+
+  async handleStagingCommit() {
+    if (!this._stagingBatch || !this._stagingBatch.batchId) return;
 
     const btn = document.getElementById("btn-confirm-import-eq");
-    btn.textContent = "Importation dans SQL Server…";
-    btn.disabled = true;
+    if (btn) {
+      btn.textContent = "Injection SQL Server en cours…";
+      btn.disabled = true;
+    }
+
+    const rows = Array.from(document.querySelectorAll("#staging-records-tbody tr.staging-row:not(.rejected)"));
+    const modifiedRecords = rows.map(tr => ({
+      id: parseInt(tr.getAttribute("data-record-id")),
+      name: tr.querySelector('[data-field="name"]')?.value?.trim(),
+      category: tr.querySelector('[data-field="category"]')?.value?.trim(),
+      clientOrSite: tr.querySelector('[data-field="clientOrSite"]')?.value?.trim(),
+      suggestedTechnicienId: parseInt(tr.querySelector('[data-field="suggestedTechnicienId"]')?.value) || null,
+      isApproved: true
+    }));
 
     try {
-      const resp = await fetch("/api/equipements/import/confirm", {
-        method: "POST",
+      const resp = await fetch(`/api/import/staging/${encodeURIComponent(this._stagingBatch.batchId)}/approve`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(this._equipementsImportAllRows)
+        body: JSON.stringify({ modifiedRecords })
       });
+
       const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || "Erreur lors de la validation du lot.");
 
       this.closeModal("modal-import-equipements");
-      this.showToast(`Import terminé : ${result.imported} équipement(s) créés, ${result.updated} mis à jour.`);
-      this.loadAllData();
+      this.showToast(`Succès : ${result.committedCount} enregistrements approuvés et injectés dans SQL Server !`);
+      await this.loadAllData();
+      this._stagingBatch = null;
     } catch (e) {
-      this.showToast("Erreur lors de l'enregistrement.", "error");
+      console.error(e);
+      this.showToast(e.message || "Erreur lors de l'enregistrement en base.", "error");
     } finally {
-      btn.textContent = "Confirmer l'import en base";
-      btn.disabled = false;
-      this._equipementsImportAllRows = null;
+      if (btn) {
+        btn.textContent = "Approuver et injecter en base SQL Server";
+        btn.disabled = false;
+      }
     }
+  },
+
+  async handleStagingDiscard() {
+    if (!this._stagingBatch || !this._stagingBatch.batchId) {
+      this.showImportEqStep(1);
+      return;
+    }
+
+    if (!confirm("Voulez-vous vraiment rejeter et abandonner l'ensemble de ce lot d'importation ?")) {
+      return;
+    }
+
+    try {
+      await fetch(`/api/import/staging/${encodeURIComponent(this._stagingBatch.batchId)}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      this.showToast("Lot de staging rejeté et supprimé.");
+    } catch (err) {
+      console.warn("Discard warning:", err);
+    }
+
+    this._stagingBatch = null;
+    this.closeModal("modal-import-equipements");
   },
 
   /* ------------------------------------------------------------------------

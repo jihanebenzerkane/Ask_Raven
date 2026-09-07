@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Raven.Models;
 using Xunit;
 
@@ -8,7 +8,7 @@ namespace Raven.Tests
     {
         public static string CalculerStatutEffectif(string statut, DateTime datePrevue)
         {
-            if (statut == "PlanifiÃ©e" && datePrevue.Date < DateTime.Today)
+            if (statut == "Planifiée" && datePrevue.Date < DateTime.Today)
             {
                 return "En retard";
             }
@@ -19,25 +19,25 @@ namespace Raven.Tests
         public void VisiteFuture_RestePlanifiee()
         {
             var dateFuture = DateTime.Today.AddDays(5);
-            var statut = CalculerStatutEffectif("PlanifiÃ©e", dateFuture);
+            var statut = CalculerStatutEffectif("Planifiée", dateFuture);
 
-            Assert.Equal("PlanifiÃ©e", statut);
+            Assert.Equal("Planifiée", statut);
         }
 
         [Fact]
         public void VisiteDuJour_RestePlanifiee()
         {
             var dateDuJour = DateTime.Today;
-            var statut = CalculerStatutEffectif("PlanifiÃ©e", dateDuJour);
+            var statut = CalculerStatutEffectif("Planifiée", dateDuJour);
 
-            Assert.Equal("PlanifiÃ©e", statut);
+            Assert.Equal("Planifiée", statut);
         }
 
         [Fact]
         public void VisiteDepassee_DevientEnRetard()
         {
             var dateDepassee = DateTime.Today.AddDays(-2);
-            var statut = CalculerStatutEffectif("PlanifiÃ©e", dateDepassee);
+            var statut = CalculerStatutEffectif("Planifiée", dateDepassee);
 
             Assert.Equal("En retard", statut);
         }
@@ -46,18 +46,18 @@ namespace Raven.Tests
         public void VisiteDejaTermineeDansLePasse_ResteValidee()
         {
             var datePassee = DateTime.Today.AddDays(-10);
-            var statut = CalculerStatutEffectif("ValidÃ©e", datePassee);
+            var statut = CalculerStatutEffectif("Validée", datePassee);
 
-            Assert.Equal("ValidÃ©e", statut);
+            Assert.Equal("Validée", statut);
         }
 
         [Fact]
         public void VisiteAnnuleeDansLePasse_ResteAnnulee()
         {
             var datePassee = DateTime.Today.AddDays(-15);
-            var statut = CalculerStatutEffectif("AnnulÃ©e", datePassee);
+            var statut = CalculerStatutEffectif("Annulée", datePassee);
 
-            Assert.Equal("AnnulÃ©e", statut);
+            Assert.Equal("Annulée", statut);
         }
     }
 }

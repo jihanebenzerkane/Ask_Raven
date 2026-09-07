@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -24,9 +24,9 @@ public class SettingsController : ControllerBase
     // GET /api/settings
     // ============================================================
     //
-    // Accessible Ã  tout utilisateur authentifiÃ©.
-    // CrÃ©e la ligne de configuration par dÃ©faut si elle n'existe
-    // pas encore (premier dÃ©marrage ou base rÃ©initialisÃ©e).
+    // Accessible Ã  tout utilisateur authentifié.
+    // Crée la ligne de configuration par défaut si elle n'existe
+    // pas encore (premier démarrage ou base réinitialisée).
     // ============================================================
 
     [HttpGet]
@@ -86,7 +86,7 @@ public class SettingsController : ControllerBase
             return BadRequest(new
             {
                 message =
-                    "Le nombre d'heures hebdomadaires doit Ãªtre supÃ©rieur Ã  0."
+                    "Le nombre d'heures hebdomadaires doit être supérieur Ã  0."
             });
         }
 
@@ -94,7 +94,7 @@ public class SettingsController : ControllerBase
         {
             return BadRequest(new
             {
-                message = "Le SLA doit Ãªtre supÃ©rieur Ã  0."
+                message = "Le SLA doit être supérieur Ã  0."
             });
         }
 
@@ -103,7 +103,7 @@ public class SettingsController : ControllerBase
             return BadRequest(new
             {
                 message =
-                    "La durÃ©e de visite doit Ãªtre supÃ©rieure Ã  0."
+                    "La durée de visite doit être supérieure Ã  0."
             });
         }
 
@@ -174,7 +174,7 @@ public class SettingsController : ControllerBase
                     "Safi",
                     "Marrakech",
                     "Agadir",
-                    "FÃ¨s"
+                    "Fès"
                 })
         };
     }

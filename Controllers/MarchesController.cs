@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Raven.Data;
@@ -65,7 +65,7 @@ namespace Raven.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] Marche model)
         {
-            if (model == null) return BadRequest("DonnÃ©es de marchÃ© invalides.");
+            if (model == null) return BadRequest("Données de marché invalides.");
 
             if (string.IsNullOrWhiteSpace(model.CodeMarche))
             {
@@ -96,7 +96,7 @@ namespace Raven.Controllers
                 return BadRequest(new { error = "Aucun fichier fourni." });
 
             if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-                return BadRequest(new { error = "Le fichier doit Ãªtre au format .xlsx." });
+                return BadRequest(new { error = "Le fichier doit être au format .xlsx." });
 
             try
             {
@@ -204,7 +204,7 @@ namespace Raven.Controllers
                         }
 
                         // â”€â”€ 2. Calculate Statut from DateFin vs today â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                        var statut = row.DateFin.Date >= DateTime.Today ? "Actif" : "ExpirÃ©";
+                        var statut = row.DateFin.Date >= DateTime.Today ? "Actif" : "Expiré";
                         
                         string refCode;
                         if (!string.IsNullOrWhiteSpace(row.Reference))
@@ -318,14 +318,14 @@ namespace Raven.Controllers
                                     _context.Equipements.Add(new Equipement
                                     {
                                         SerialNumber = serial,
-                                        Nom = $"{nom} ({count} unitÃ©s)",
+                                        Nom = $"{nom} ({count} unités)",
                                         Categorie = categorie,
                                         SiteId = primarySite.Id,
                                         DateInstallation = row.DateDebut,
                                         Criticite = 3,
                                         ScoreSante = 85,
                                         ScoreRisque = 25,
-                                        Statut = "OpÃ©rationnel",
+                                        Statut = "Opérationnel",
                                         DerniereVisite = row.DateDebut,
                                         ProchaineVisitePrevue = row.DateDebut.AddMonths(3)
                                     });
@@ -347,7 +347,7 @@ namespace Raven.Controllers
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return StatusCode(500, new { error = $"Ã‰chec de la transaction d'import : {ex.Message}" });
+                    return StatusCode(500, new { error = $"Échec de la transaction d'import : {ex.Message}" });
                 }
             });
         }
@@ -363,8 +363,8 @@ namespace Raven.Controllers
 
             // Shared data
             var headers = new string[] {
-                "RÃ©fÃ©rence", "Client", "Date dÃ©but", "Date fin", "Type de contrat",
-                "Nb visite / An", "Nb visite rÃ©alisÃ©", "PV", "Facture", "Statut", "Commentaire"
+                "Référence", "Client", "Date début", "Date fin", "Type de contrat",
+                "Nb visite / An", "Nb visite réalisé", "PV", "Facture", "Statut", "Commentaire"
             };
             var data = marches.Select(m => new string[]
             {
@@ -384,7 +384,7 @@ namespace Raven.Controllers
             if (format == "pdf")
             {
                 if (pdfService == null) return StatusCode(500, "PDF service unavailable");
-                var pdfBytes = pdfService.GenerateTablePdf("MarchÃ©s & Clients", headers, data);
+                var pdfBytes = pdfService.GenerateTablePdf("Marchés & Clients", headers, data);
                 return File(pdfBytes, "application/pdf", $"Marches_{DateTime.Now:yyyyMMdd}.pdf");
             }
             else if (format == "csv")
@@ -396,7 +396,7 @@ namespace Raven.Controllers
             else // default: excel
             {
                 using var workbook = new ClosedXML.Excel.XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("MarchÃ©s");
+                var worksheet = workbook.Worksheets.Add("Marchés");
                 for (int c = 0; c < headers.Length; c++)
                     worksheet.Cell(1, c + 1).Value = headers[c];
                 var headerRange = worksheet.Range(1, 1, 1, headers.Length);

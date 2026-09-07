@@ -1,8 +1,8 @@
-# TechnoVIS
+# Raven
 
 > **Système intelligent de planification et suivi des visites de maintenance préventive et curative (ECS Maintenance)**
 
-TechnoVIS est une application d'ingénierie logicielle complète construite avec **ASP.NET Core (.NET 10)**, **EF Core**, **SQL Server** et une interface web moderne temps réel. Elle intègre un moteur de scoring algorithmique pour la priorisation des visites, un pipeline ETL transactionnel pour l'import de données Excel réelles, et un module d'authentification sécurisé par JWT.
+Raven est une application d'ingénierie logicielle complète construite avec **ASP.NET Core (.NET 10)**, **EF Core**, **SQL Server** et une interface web moderne temps réel. Elle intègre un moteur de scoring algorithmique pour la priorisation des visites, un pipeline ETL transactionnel pour l'import de données Excel réelles, et un module d'authentification sécurisé par JWT.
 
 ---
 
@@ -80,7 +80,7 @@ TechnoVIS est une application d'ingénierie logicielle complète construite avec
 1. **Configurer la base de données dans `appsettings.json` :**
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Server=localhost,1433;Database=TechnoVIS;User Id=sa;Password=VotreMotDePasse;TrustServerCertificate=True;"
+     "DefaultConnection": "Server=localhost,1433;Database=RavenDB;User Id=sa;Password=VotreMotDePasse;TrustServerCertificate=True;"
    }
    ```
 

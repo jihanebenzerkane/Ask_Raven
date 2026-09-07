@@ -399,6 +399,61 @@ namespace Raven.Migrations
                     b.ToTable("Specialites");
                 });
 
+            modelBuilder.Entity("Raven.Models.StagingRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BatchId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<double>("ConfidenceScore")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RawDataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SuggestedTechnicienMatricule")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SuggestedTechnicienName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserEditsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ValidationErrors")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatchId", "Status");
+
+                    b.ToTable("StagingRecords");
+                });
+
             modelBuilder.Entity("Raven.Models.Technicien", b =>
                 {
                     b.Property<int>("Id")

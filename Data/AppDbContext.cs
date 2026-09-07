@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Raven.Models;
 
 namespace Raven.Data;
@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
         => Set<ApplicationSetting>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
+    public DbSet<StagingRecord> StagingRecords => Set<StagingRecord>();
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -88,6 +89,9 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(o => o.UtilisateurId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<StagingRecord>()
+            .HasIndex(sr => new { sr.BatchId, sr.Status });
 
 
         // ====================================================

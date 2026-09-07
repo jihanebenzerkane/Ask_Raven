@@ -54,6 +54,20 @@
         <button type="submit" id="btn-submit-login" class="btn btn-primary auth-submit-btn suite-btn-primary">
           <span>Se connecter</span>
         </button>
+
+        <div class="auth-sso-divider">
+          <span>ou authentification d'entreprise</span>
+        </div>
+
+        <button type="button" id="btn-sso-login" class="auth-sso-btn" title="Connexion sécurisée via Microsoft Entra ID (ECS Informatique)">
+          <svg viewBox="0 0 23 23" class="auth-sso-logo" style="width:18px;height:18px;">
+            <path fill="#f35325" d="M1 1h10v10H1z"/>
+            <path fill="#81bc06" d="M12 1h10v10H12z"/>
+            <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+            <path fill="#ffba08" d="M12 12h10v10H12z"/>
+          </svg>
+          <span>Connexion SSO — ECS Informatique</span>
+        </button>
       </form>
     </div>
 
@@ -172,7 +186,7 @@
           <div class="user-profile-name" id="user-display-name">Responsable Maintenance</div>
           <div class="user-profile-role" id="user-display-role">Mode Administrateur</div>
         </div>
-        <span style="font-size:0.75rem; color:var(--text-muted);">🔄</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--text-muted);"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
       </div>
       <div class="status-indicator" style="margin-top:8px;">
         <span id="network-dot" class="dot-online"></span>
@@ -1297,65 +1311,113 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     MODAL — IMPORT EXCEL ÉQUIPEMENTS
+     MODAL — GLOBAL SMART IMPORT & HITL STAGING REVIEW
 ═════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-import-equipements">
-  <div class="modal-box" style="max-width: 880px; width: 95%;">
-    <div class="modal-header">
-      <h3 class="modal-title">↑ Importer des Équipements depuis Excel</h3>
-      <button class="close-modal" id="close-modal-import-equipements">✕</button>
-    </div>
-
-    <div id="import-eq-step-1">
-      <div class="form-group">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-          <label for="input-excel-equipements" style="margin:0;">Fichier Excel (.xlsx)</label>
-          <a href="/api/equipements/import/template" download="template_equipements.xlsx"
-             style="font-size:0.82rem; color:var(--primary); text-decoration:none; border:1px solid var(--primary); border-radius:var(--r-sm); padding:3px 10px; transition:all 0.2s;"
-             onmouseover="this.style.background='var(--primary)';this.style.color='#fff';"
-             onmouseout="this.style.background='';this.style.color='var(--primary)';"
-          >Telecharger le modele</a>
+  <div class="modal-box staging-modal-box">
+    <div class="modal-header" style="background:#f8fafc; border-bottom:1px solid var(--border);">
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 class="modal-title" style="font-size:1.05rem; font-weight:700;">Global Smart Import & Staging (HITL)</h3>
+          <span class="badge badge-planifiee" id="staging-active-batch-id" style="font-family:monospace; display:none;">BATCH-INITIAL</span>
         </div>
-        <input type="file" class="form-control" id="input-excel-equipements" accept=".xlsx">
-        <small style="color: var(--text-muted); margin-top: 6px; display:block;">
-          Colonnes requises : <code>N° Série</code>, <code>Nom Equipement</code>, <code>Catégorie</code>, <code>Client</code>, <code>Site</code>, <code>Criticité</code>, <code>Score Santé</code>, <code>Date Installation</code>, <code>Statut</code>
-        </small>
+        <div class="staging-header-stats" id="staging-header-stats" style="display:none;">
+          <span class="staging-stat-pill high" id="stat-high-conf">0 Haute confiance (≥85%)</span>
+          <span class="staging-stat-pill med" id="stat-med-conf">0 Modérée (50-84%)</span>
+          <span class="staging-stat-pill low" id="stat-low-conf">0 À vérifier (&lt;50%)</span>
+        </div>
       </div>
-      <div id="import-eq-error-msg" style="color:#e05a5a; margin-top:8px; display:none; padding:10px; background:rgba(224,90,90,0.1); border-radius:var(--r-sm);"></div>
-      <div class="form-actions">
+      <button class="close-modal" id="close-modal-import-equipements" title="Fermer">✕</button>
+    </div>
+
+    <!-- Step 1: Upload & Pipeline Trigger -->
+    <div id="import-eq-step-1" style="padding: 20px;">
+      <div style="margin-bottom: 16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:12px 16px; font-size:0.84rem; color:#1e40af;">
+        <strong>Pipeline d'importation unifiée Raven ERP :</strong> Déposez vos fichiers au format <strong>Excel (.xlsx)</strong>, <strong>CSV (.csv)</strong>, <strong>PDF technique (.pdf)</strong> ou <strong>Image (.png, .jpg)</strong>. Le système extrait les données brutes dans le tampon SQL <code>StagingRecords</code>, calcule le score de confiance et suggère les affectations de techniciens par spécialité avant validation finale.
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div class="form-group">
+          <label for="import-entity-type">Entité cible à importer</label>
+          <select class="form-control" id="import-entity-type">
+            <option value="AutoDetect" selected>Détection automatique selon le fichier</option>
+            <option value="Equipement">Équipements du Parc Machine</option>
+            <option value="Marche">Marchés & Contrats de Maintenance</option>
+            <option value="Technicien">Techniciens & Spécialités</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label style="margin-bottom: 6px;">Modèles de fichiers</label>
+          <div style="display:flex; gap:8px;">
+            <a href="/api/equipements/import/template" download="template_equipements.xlsx" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">
+              ↓ Modèle Équipements
+            </a>
+            <a href="/modele_import_marches.xlsx" download="modele_import_marches.xlsx" class="btn btn-secondary btn-sm" style="font-size:0.75rem;">
+              ↓ Modèle Marchés
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="input-excel-equipements">Fichier source (PDF, PNG, XLSX, CSV)</label>
+        <input type="file" class="form-control" id="input-excel-equipements" accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg">
+      </div>
+
+      <div id="import-eq-error-msg" style="color:#dc2626; margin-top:8px; display:none; padding:10px; background:#fee2e2; border-radius:6px; font-size:0.84rem;"></div>
+
+      <div class="form-actions" style="margin-top:20px;">
         <button type="button" class="btn btn-secondary" id="btn-cancel-import-eq">Annuler</button>
-        <button type="button" class="btn btn-primary" id="btn-preview-excel-eq" disabled>Analyser le fichier</button>
+        <button type="button" class="btn btn-primary" id="btn-preview-excel-eq" disabled>
+          Lancer l'extraction vers Staging (HITL)
+        </button>
       </div>
     </div>
 
-    <div id="import-eq-step-2" style="display:none;">
-      <div id="import-eq-summary" style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-secondary);"></div>
-      <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
-        <table class="data-table" id="import-eq-preview-table">
+    <!-- Step 2: Human-In-The-Loop Review Table -->
+    <div id="import-eq-step-2" style="display:none; padding: 16px 20px; flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;">
+        <div style="font-size:0.84rem; color:var(--text-secondary);">
+          Vérifiez les données extraites ci-dessous. Vous pouvez corriger directement les cellules ou réassigner les techniciens suggérés.
+        </div>
+        <input type="text" id="staging-search-input" class="form-control" placeholder="Filtrer ce lot..." style="width:220px; font-size:0.80rem; padding:4px 8px;">
+      </div>
+
+      <div class="staging-table-wrapper" style="flex:1;">
+        <table class="staging-table" id="staging-records-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>N° Série</th>
-              <th>Nom</th>
-              <th>Catégorie</th>
-              <th>Client</th>
-              <th>Site</th>
-              <th>Criticité</th>
-              <th>Statut</th>
+              <th style="width:40px;">#</th>
+              <th>Confiance</th>
+              <th>Identifiant</th>
+              <th>Désignation / Nom</th>
+              <th>Catégorie / Spécialité</th>
+              <th>Client / Site</th>
+              <th>Affectation suggérée</th>
               <th>Avertissements</th>
+              <th style="width:70px;">Action</th>
             </tr>
           </thead>
-          <tbody id="import-eq-preview-body"></tbody>
+          <tbody id="staging-records-tbody"></tbody>
         </table>
       </div>
-      <div class="form-actions" style="margin-top:16px;">
-        <button type="button" class="btn btn-secondary" id="btn-back-import-eq">← Retour</button>
-        <button type="button" class="btn btn-primary" id="btn-confirm-import-eq">Confirmer l'import en base</button>
+
+      <div class="form-actions" style="margin-top:16px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-back-import-eq">← Nouveau fichier</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-discard-staging-batch" style="color:#dc2626; border-color:#fca5a5;">
+            Rejeter le lot
+          </button>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-confirm-import-eq" style="padding:8px 20px;">
+          Approuver et injecter en base SQL Server
+        </button>
       </div>
     </div>
 
   </div>
 </div>
+
 
 <!-- ═══════════════════════════════════════════
      MODAL — FICHE DE VISITE / RAPPORT TERRAIN
@@ -1681,97 +1743,92 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     MODAL — ASK RAVEN (Azure AI Document Intelligence & Assistant)
+     MODAL — RAVEN COMMAND & SEARCH PALETTE (NetSuite Dark Steel Edition)
 ═════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-ask-raven">
-  <div class="modal-box ask-raven-modal-box" style="max-width: 680px; width: 95%;">
-    <div class="modal-header ask-raven-header">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <img src="logo.svg" alt="Raven Logo" class="ask-raven-logo-head">
-        <div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <h3 class="modal-title" style="color: #ffffff; margin: 0; font-size: 1.05rem; font-weight: 700;">Ask Raven</h3>
-            <span class="badge ask-raven-azure-badge"></span>
-          </div>
-        </div>
+  <div class="modal-box command-palette-modal-box" style="max-width: 720px; width: 95%;">
+    
+    <!-- Large Top Search Bar -->
+    <div class="command-palette-search-wrapper">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="command-palette-icon">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="command-palette-input" class="command-palette-input" placeholder="Recherche rapide (équipements, marchés, techniciens, visites...) ou commande (/visite, /import)..." autocomplete="off" autofocus>
+      <div class="command-palette-kbd-hints">
+        <kbd class="cmd-kbd">Ctrl+J</kbd>
+        <kbd class="cmd-kbd">Échap</kbd>
       </div>
-      <button type="button" class="ask-raven-close" id="btn-close-modal-ask-raven" title="Fermer (Échap)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
     </div>
 
-    <div class="modal-body" style="padding: 18px 22px; max-height: 70vh; overflow-y: auto;">
-      
-      <!-- Dialogue History -->
-      <div id="ask-raven-history" class="ask-raven-history">
-        <div class="ask-raven-msg bot">
-          <div class="ask-raven-msg-avatar">
-            <img src="logo.svg" alt="Raven" style="width:20px;height:20px;border-radius:4px;">
+    <!-- Live Server Results & Quick Commands Area -->
+    <div class="command-palette-body" id="command-palette-results">
+      <!-- Quick suggestions / default state -->
+      <div id="cmd-default-actions">
+        <div class="cmd-group">
+          <div class="cmd-group-title">
+            <span>Actions Rapides & Raccourcis</span>
           </div>
-          <div class="ask-raven-msg-bubble">
-            Bonjour ! Je suis <strong>Raven Copilot</strong>. Je peux vous assister dans l'analyse de vos parcs d'équipements, le suivi des interventions préventives, et l'extraction instantanée de vos documents techniques via Azure AI Document Intelligence. Que souhaitez-vous vérifier ?
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Suggestion Chips -->
-      <div style="margin-top: 14px; margin-bottom: 14px;">
-        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Suggestions rapides :</span>
-        <div class="ask-raven-chips" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
-          <button type="button" class="ask-raven-chip" data-prompt="Quels équipements sont actuellement en alerte critique ?">
-            🚨 Équipements critiques
-          </button>
-          <button type="button" class="ask-raven-chip" data-prompt="Quels techniciens sont disponibles cette semaine ?">
-            👷 Disponibilité techniciens
-          </button>
-          <button type="button" class="ask-raven-chip" data-prompt="Résume le calendrier des visites de maintenance préventive.">
-            📅 Calendrier préventif
-          </button>
-        </div>
-      </div>
-
-      <!-- Document Upload / OCR Dropzone -->
-      <div class="ask-raven-dropzone" id="ask-raven-ocr-dropzone">
-        <input type="file" id="ask-raven-file-input" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv,.docx" style="display:none;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;" id="ask-raven-dropzone-trigger">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px;color:var(--accent);">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="12" y1="18" x2="12" y2="12"></line>
-            <line x1="9" y1="15" x2="15" y2="15"></line>
-          </svg>
-          <div style="text-align: left;">
-            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">
-              Téléverser un document pour extraction OCR (Azure Document Intelligence)
+          <div class="cmd-item" data-action="NEW_VISITE">
+            <div class="cmd-item-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><path d="M12 5v14M5 12h14"/></svg>
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">/visite — Planifier une nouvelle intervention</div>
+                <div class="cmd-item-sub">Ouvre le formulaire de planification préventive ou curative</div>
+              </div>
             </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">
-              PDF technique, facture, devis, rapport d'expertise ou bon d'intervention (max 20 Mo)
-            </div>
+            <span class="cmd-item-badge">Commande</span>
           </div>
-        </div>
-        <div id="ask-raven-file-badge" style="display:none; margin-top: 10px; padding: 6px 12px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px; font-size: 0.76rem; color: #0369a1; display: flex; align-items: center; justify-content: space-between;">
-          <span id="ask-raven-file-name">Fichier sélectionné</span>
-          <button type="button" id="btn-remove-raven-file" style="background:none;border:none;color:#0284c7;cursor:pointer;font-weight:bold;">✕</button>
+
+          <div class="cmd-item" data-action="OPEN_IMPORT">
+            <div class="cmd-item-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">/import — Importer des données (HITL Staging)</div>
+                <div class="cmd-item-sub">Extraction intelligente PDF, PNG, XLSX, CSV avec affectation auto</div>
+              </div>
+            </div>
+            <span class="cmd-item-badge">Commande</span>
+          </div>
+
+          <div class="cmd-item" data-action="NAV_PLANNING">
+            <div class="cmd-item-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">/planning — Ouvrir le calendrier de maintenance</div>
+                <div class="cmd-item-sub">Vue mensuelle et suivi des interventions prévues</div>
+              </div>
+            </div>
+            <span class="cmd-item-badge">Navigation</span>
+          </div>
+
+          <div class="cmd-item" data-action="EXPORT_AUDIT">
+            <div class="cmd-item-left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cmd-item-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div class="cmd-item-info">
+                <div class="cmd-item-title">/export — Exporter le rapport d'audit du parc (PDF)</div>
+                <div class="cmd-item-sub">Génère l'état de conformité et criticité</div>
+              </div>
+            </div>
+            <span class="cmd-item-badge">Export</span>
+          </div>
         </div>
       </div>
 
+      <!-- Container dynamically populated by SearchController results -->
+      <div id="cmd-dynamic-results" style="display:none;"></div>
     </div>
 
-    <!-- Input Box -->
-    <div class="modal-footer" style="padding: 12px 18px; background: var(--bg); border-top: 1px solid var(--border-light);">
-      <form id="form-ask-raven" style="display:flex; width:100%; gap:8px;">
-        <input type="text" id="input-ask-raven" class="form-control" placeholder="Demander à Raven ou analyser un document..." style="flex:1; border-radius:6px; font-size:0.86rem;" autocomplete="off" required>
-        <button type="submit" class="btn btn-primary" id="btn-send-ask-raven" style="padding: 8px 18px; display: flex; align-items: center; gap: 6px;">
-          <span>Envoyer</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-          </svg>
-        </button>
-      </form>
+    <!-- Palette Footer -->
+    <div class="command-palette-footer">
+      <div class="command-palette-footer-shortcuts">
+        <span><kbd class="cmd-kbd">↑</kbd> <kbd class="cmd-kbd">↓</kbd> Naviguer</span>
+        <span><kbd class="cmd-kbd">Entrée</kbd> Sélectionner</span>
+        <span><kbd class="cmd-kbd">Échap</kbd> Fermer</span>
+      </div>
+      <div style="color:#38bdf8; font-weight:600; font-size:0.72rem;">
+        Recherche temps réel SQL Server
+      </div>
     </div>
 
   </div>

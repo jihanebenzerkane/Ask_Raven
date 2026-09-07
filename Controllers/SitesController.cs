@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -85,7 +85,7 @@ namespace Raven.Controllers
 
             if (site == null)
             {
-                return NotFound(new { message = "Site non trouvÃ©." });
+                return NotFound(new { message = "Site non trouvé." });
             }
 
             return Ok(new
@@ -124,7 +124,7 @@ namespace Raven.Controllers
             var client = await _context.Clients.FindAsync(dto.ClientId);
             if (client == null)
             {
-                return BadRequest(new { message = "Le client spÃ©cifiÃ© n'existe pas." });
+                return BadRequest(new { message = "Le client spécifié n'existe pas." });
             }
 
             var codeSite = string.IsNullOrWhiteSpace(dto.CodeSite)
@@ -133,7 +133,7 @@ namespace Raven.Controllers
 
             if (await _context.Sites.AnyAsync(s => s.CodeSite == codeSite))
             {
-                return BadRequest(new { message = "Un site avec ce code existe dÃ©jÃ ." });
+                return BadRequest(new { message = "Un site avec ce code existe déjÃ ." });
             }
 
             var site = new Site
@@ -161,14 +161,14 @@ namespace Raven.Controllers
             var site = await _context.Sites.FindAsync(id);
             if (site == null)
             {
-                return NotFound(new { message = "Site non trouvÃ©." });
+                return NotFound(new { message = "Site non trouvé." });
             }
 
             if (!string.IsNullOrWhiteSpace(dto.NomSite)) site.NomSite = dto.NomSite.Trim();
             if (dto.ClientId > 0 && dto.ClientId != site.ClientId)
             {
                 var clientExists = await _context.Clients.AnyAsync(c => c.Id == dto.ClientId);
-                if (!clientExists) return BadRequest(new { message = "Client spÃ©cifiÃ© introuvable." });
+                if (!clientExists) return BadRequest(new { message = "Client spécifié introuvable." });
                 site.ClientId = dto.ClientId;
             }
 
@@ -192,22 +192,22 @@ namespace Raven.Controllers
 
             if (site == null)
             {
-                return NotFound(new { message = "Site non trouvÃ©." });
+                return NotFound(new { message = "Site non trouvé." });
             }
 
-            // VÃ©rification de sÃ©curitÃ© mÃ©tier : interdiction de supprimer un site ayant des Ã©quipements
+            // Vérification de sécurité métier : interdiction de supprimer un site ayant des équipements
             if (site.Equipements != null && site.Equipements.Any())
             {
                 return BadRequest(new
                 {
-                    message = $"Impossible de supprimer le site '{site.NomSite}' car il contient {site.Equipements.Count} Ã©quipement(s) associÃ©(s). Veuillez d'abord rÃ©assigner ou supprimer ces Ã©quipements."
+                    message = $"Impossible de supprimer le site '{site.NomSite}' car il contient {site.Equipements.Count} équipement(s) associé(s). Veuillez d'abord réassigner ou supprimer ces équipements."
                 });
             }
 
             _context.Sites.Remove(site);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Site supprimÃ© avec succÃ¨s." });
+            return Ok(new { message = "Site supprimé avec succès." });
         }
     }
 }
